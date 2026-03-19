@@ -7,6 +7,7 @@ import 'package:trackly/features/screens/statisticScreen/ui/statiscticScreen.dar
 import 'package:trackly/features/screens/userScreen/ui/userScreen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
+// ignore: unused_element
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
 
 final GoRouter router = GoRouter(

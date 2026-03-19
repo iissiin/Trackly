@@ -22,7 +22,6 @@ class Navbar extends StatelessWidget {
     return Scaffold(
       body: navigationShell,
       bottomNavigationBar: Container(
-        // Можно задать фиксированную высоту контейнера, например 60-70
         height: 90,
         decoration: BoxDecoration(
           color: appColors.white,
@@ -44,7 +43,6 @@ class Navbar extends StatelessWidget {
             elevation: 0,
             showSelectedLabels: false,
             showUnselectedLabels: false,
-            // Убираем лишнее пространство от шрифтов
             selectedFontSize: 0,
             unselectedFontSize: 0,
             items: [
@@ -70,7 +68,6 @@ class Navbar extends StatelessWidget {
 
     return BottomNavigationBarItem(
       icon: Padding(
-        // Уменьшаем или убираем Padding, если высота контейнера фиксированная
         padding: const EdgeInsets.only(top: 12),
         child: SvgPicture.asset(
           assetName,

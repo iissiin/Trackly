@@ -43,6 +43,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     AppLogger.info('Onboarding: Вход пропущен (заглушка)');
   }
 
+  // ignore: unused_element
   void _handleAuthenticationEvent(
     GoogleSignInAuthenticationEvent event,
     Emitter<OnboardingState> emit,
@@ -73,6 +74,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     }
   }
 
+  // ignore: unused_element
   void _handleAuthenticationError(Object error) {
     print('onboarding auth error: $error');
   }
