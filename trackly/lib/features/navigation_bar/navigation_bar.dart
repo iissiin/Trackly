@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:trackly/core/theme/appColors.dart';
-import 'package:trackly/core/theme/appImages.dart';
+import 'package:trackly/core/theme/app_colors.dart';
+import 'package:trackly/core/theme/app_images.dart';
 
 import 'package:go_router/go_router.dart';
 

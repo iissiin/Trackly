@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class homeScreen extends StatelessWidget {
@@ -5,6 +6,19 @@ class homeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: Center(child: Text('менй скрин')));
+    final user = FirebaseAuth.instance.currentUser;
+
+    return Scaffold(
+      body: Center(
+        child: Text(
+          'Привет, ${user?.displayName ?? 'друг'}! 👋',
+          style: const TextStyle(
+            fontFamily: 'Nunito',
+            fontSize: 24,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ),
+    );
   }
 }

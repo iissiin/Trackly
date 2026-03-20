@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:trackly/features/navigationBar/navBar.dart';
-import 'package:trackly/features/screens/homeScreen/ui/homeScreen.dart';
+import 'package:trackly/features/navigation_bar/navigation_bar.dart';
+import 'package:trackly/features/screens/home_screen/ui/home_screen.dart';
 import 'package:trackly/features/screens/onboarding/ui/onboarding.dart';
-import 'package:trackly/features/screens/statisticScreen/ui/statiscticScreen.dart';
-import 'package:trackly/features/screens/userScreen/ui/userScreen.dart';
+import 'package:trackly/features/screens/statistic_screen/ui/statisctic_screen.dart';
+import 'package:trackly/features/screens/user_screen/ui/user_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 // ignore: unused_element
