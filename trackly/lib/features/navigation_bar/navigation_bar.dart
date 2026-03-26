@@ -24,7 +24,7 @@ class Navbar extends StatelessWidget {
       bottomNavigationBar: Container(
         height: 90,
         decoration: BoxDecoration(
-          color: appColors.white,
+          color: appColors.mint,
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(14),
             topRight: Radius.circular(14),
@@ -39,7 +39,7 @@ class Navbar extends StatelessWidget {
             currentIndex: navigationShell.currentIndex,
             onTap: _onTap,
             type: BottomNavigationBarType.fixed,
-            backgroundColor: appColors.white,
+            backgroundColor: Color.fromARGB(255, 255, 255, 255),
             elevation: 0,
             showSelectedLabels: false,
             showUnselectedLabels: false,
@@ -63,7 +63,7 @@ class Navbar extends StatelessWidget {
   ) {
     final bool isSelected = navigationShell.currentIndex == index;
     final Color iconColor = isSelected
-        ? appColors.accent
+        ? appColors.green
         : appColors.secondaryGray;
 
     return BottomNavigationBarItem(

@@ -60,5 +60,11 @@
 		<true/>
 		<key>UIViewControllerBasedStatusBarAppearance</key>
 		<false/>
+
+		<key>NSLocationWhenInUseUsageDescription</key>
+		<string>Trackly использует геолокацию для отображения погоды в вашем городе</string>
+
+		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+		<string>Trackly использует геолокацию для отображения погоды в вашем городе</string>
 	</dict>
 </plist>
