@@ -8,13 +8,9 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:trackly/core/utils/logger.dart';
 
-// ─── Events ───────────────────────────────────────────
-
 abstract class OnboardingEvent {}
 
 class OnboardingAuthWithGoogleEvent extends OnboardingEvent {}
-
-// ─── States ───────────────────────────────────────────
 
 abstract class OnboardingState {}
 
@@ -29,8 +25,6 @@ class OnboardingErrorState extends OnboardingState {
   OnboardingErrorState(this.message);
 }
 
-// ─── Bloc ─────────────────────────────────────────────
-
 class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
   OnboardingBloc() : super(OnboardingInitialState()) {
     on<OnboardingAuthWithGoogleEvent>(_onAuthWithGoogle);
@@ -42,8 +36,6 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
   ) async {
     emit(OnboardingLoadingState());
 
-    // Completer позволяет дождаться результата из stream listener
-    // и вызвать emit уже внутри этого handler-а (не после его завершения)
     final completer = Completer<OnboardingState>();
 
     try {
@@ -69,11 +61,9 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
                 return;
               }
 
-              // сохраняем токен
               const storage = FlutterSecureStorage();
               await storage.write(key: 'idToken', value: idToken);
 
-              // входим в Firebase
               final credential = GoogleAuthProvider.credential(
                 idToken: idToken,
               );
@@ -91,7 +81,6 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
                 return;
               }
 
-              // сохраняем пользователя в Firestore
               await FirebaseFirestore.instance
                   .collection('users')
                   .doc(user.uid)
@@ -123,7 +112,6 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
       signIn.authenticate();
       AppLogger.info('Onboarding: ожидаем выбор аккаунта Google...');
 
-      // ждём результата из listener — emit безопасен пока мы здесь
       final result = await completer.future;
       emit(result);
     } catch (e) {
