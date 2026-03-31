@@ -1,3 +1,6 @@
+// ignore_for_file: deprecated_member_use
+
+import 'dart:async';
 import 'dart:convert';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
@@ -23,7 +26,32 @@ class WeatherRepository {
       );
     }
 
-    return Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.low);
+    // Сначала пробуем lastKnown — он мгновенный
+    final lastKnown = await Geolocator.getLastKnownPosition();
+    if (lastKnown != null) return lastKnown;
+
+    // Потом getCurrentPosition с коротким таймаутом
+    try {
+      return await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.low,
+        forceAndroidLocationManager: true,
+        timeLimit: const Duration(seconds: 8),
+      );
+    } on TimeoutException {
+      // Fallback: координаты Алматы
+      return Position(
+        latitude: 43.238949,
+        longitude: 76.889709,
+        timestamp: DateTime.now(),
+        accuracy: 0,
+        altitude: 0,
+        altitudeAccuracy: 0,
+        heading: 0,
+        headingAccuracy: 0,
+        speed: 0,
+        speedAccuracy: 0,
+      );
+    }
   }
 
   Future<String> _getCityName(double lat, double lon) async {

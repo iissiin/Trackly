@@ -39,7 +39,10 @@ class WeatherBloc extends Bloc<WeatherEvent, WeatherState> {
     try {
       final weather = await _repository.fetchWeather();
       emit(WeatherLoaded(weather));
-    } catch (e) {
+    } catch (e, stackTrace) {
+      // ВАЖНО: Добавьте эти две строки, чтобы увидеть ошибку в консоли
+      print('WEATHER_BLOC_ERROR: $e');
+      print('STACKTRACE: $stackTrace');
       emit(WeatherError(e.toString()));
     }
   }
