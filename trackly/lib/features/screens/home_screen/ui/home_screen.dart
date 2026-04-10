@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:trackly/core/theme/app_colors.dart';
+import 'package:trackly/features/screens/home_screen/bloc/home_screen_bloc.dart';
 import 'package:trackly/features/widgets/weather_widget/bloc/weather_bloc.dart';
 import 'package:trackly/features/widgets/weather_widget/ui/weather_widget.dart';
 
@@ -10,8 +11,13 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => WeatherBloc()..add(WeatherLoadRequested()),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => WeatherBloc()..add(WeatherLoadRequested())),
+        BlocProvider(
+          create: (_) => TrackersBloc()..add(TrackersLoadRequested()),
+        ),
+      ],
       child: const _HomeView(),
     );
   }
@@ -25,27 +31,48 @@ class _HomeView extends StatelessWidget {
     return Scaffold(
       backgroundColor: appColors.mint,
       body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            SliverPersistentHeader(pinned: true, delegate: _TopBarDelegate()),
+        child: BlocBuilder<TrackersBloc, TrackersState>(
+          builder: (context, state) {
+            if (state is TrackersLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              sliver: SliverList(
-                delegate: SliverChildListDelegate([
-                  const SizedBox(height: 12),
-                  const _EmptyState(),
-                  const SizedBox(height: 24),
-                ]),
-              ),
-            ),
-          ],
+            final hasTrackers =
+                state is TrackersLoaded && state.activeTrackersCount > 0;
+
+            return CustomScrollView(
+              slivers: [
+                SliverPersistentHeader(
+                  pinned: true,
+                  delegate: _TopBarDelegate(),
+                ),
+
+                if (!hasTrackers)
+                  const SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Center(child: _EmptyState()),
+                  )
+                else
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    sliver: SliverList(
+                      delegate: SliverChildListDelegate([
+                        const SizedBox(height: 12),
+                        // TODO: список трекеров
+                        const SizedBox(height: 24),
+                      ]),
+                    ),
+                  ),
+              ],
+            );
+          },
         ),
       ),
     );
   }
 }
 
+// MARK: TOP BAR
 class _TopBarDelegate extends SliverPersistentHeaderDelegate {
   static const double _height = 130.0;
 
@@ -67,14 +94,12 @@ class _TopBarDelegate extends SliverPersistentHeaderDelegate {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Expanded(child: _GreetingText()),
               const SizedBox(width: 12),
               _AddButton(),
             ],
           ),
-
           const SizedBox(height: 12),
           const WeatherBarWidget(),
         ],
@@ -86,41 +111,39 @@ class _TopBarDelegate extends SliverPersistentHeaderDelegate {
   bool shouldRebuild(covariant _TopBarDelegate oldDelegate) => false;
 }
 
-// MARK: приветственный текст
-
+// MARK: GREETING
 class _GreetingText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
     final name = user?.displayName?.split(' ').first ?? 'друг';
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          'Привет, $name! 👋',
-          style: TextStyle(
-            fontFamily: 'Nunito',
-            fontSize: 28,
-            color: appColors.text,
-            fontVariations: [FontVariation('wght', 900.0)],
-          ),
-        ),
-      ],
+    return Text(
+      'Привет, $name! 👋',
+      style: TextStyle(
+        fontFamily: 'Nunito',
+        fontSize: 28,
+        color: appColors.text,
+        fontVariations: [FontVariation('wght', 900.0)],
+      ),
     );
   }
 }
 
-// MARK: кнопка +
-
+// MARK: ADD BUTTON
 class _AddButton extends StatelessWidget {
+  final VoidCallback? onTap;
+
+  const _AddButton({this.onTap});
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        // TODO: открыть bottom sheet добавления трекера
-      },
+      onTap:
+          onTap ??
+          () {
+            context.read<TrackersBloc>().add(TrackerAdded());
+          },
       child: Container(
         width: 44,
         height: 44,
@@ -134,40 +157,40 @@ class _AddButton extends StatelessWidget {
   }
 }
 
-// MARK: состояние экрана без трекеров
-
+// MARK: EMPTY STATE
 class _EmptyState extends StatelessWidget {
   const _EmptyState();
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 60),
-      child: Column(
-        children: [
-          const Text('🌱', style: TextStyle(fontSize: 52)),
-          const SizedBox(height: 12),
-          Text(
-            'Нет трекеров',
-            style: TextStyle(
-              fontFamily: 'Nunito',
-              fontSize: 18,
-              color: appColors.text,
-              fontVariations: [FontVariation('wght', 800.0)],
-            ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Text('🌱', style: TextStyle(fontSize: 52)),
+        const SizedBox(height: 12),
+        Text(
+          'Нет трекеров',
+          style: TextStyle(
+            fontFamily: 'Nunito',
+            fontSize: 18,
+            color: appColors.text,
+            fontVariations: [FontVariation('wght', 800.0)],
           ),
-          const SizedBox(height: 6),
-          Text(
+        ),
+        const SizedBox(height: 6),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 40),
+          child: Text(
             'Нажми + чтобы добавить первую привычку',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontFamily: 'Nunito',
               fontSize: 14,
-              color: appColors.text,
+              color: appColors.textSub,
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:trackly/core/theme/app_colors.dart';
 import 'package:trackly/data/models/weather_model.dart';
 import '../bloc/weather_bloc.dart';
 
@@ -38,8 +38,6 @@ class _WeatherBarContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return _WeatherBarShell(
       child: Row(
         children: [
@@ -52,17 +50,22 @@ class _WeatherBarContent extends StatelessWidget {
               children: [
                 Text(
                   '${weather.temperature.round()}°',
-                  style: GoogleFonts.nunito(
+                  style: TextStyle(
+                    fontFamily: 'Nunito',
                     fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: colorScheme.onSurface,
+                    fontVariations: const [FontVariation('wght', 700.0)],
+                    color: appColors.text,
+                    height: 1.3,
                   ),
                 ),
                 Text(
                   weather.description,
-                  style: GoogleFonts.nunitoSans(
+                  style: TextStyle(
+                    fontFamily: 'Nunito',
                     fontSize: 12,
-                    color: colorScheme.onSurface.withOpacity(0.55),
+                    fontVariations: const [FontVariation('wght', 400.0)],
+                    color: appColors.textSub,
+                    height: 1.3,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -77,14 +80,17 @@ class _WeatherBarContent extends StatelessWidget {
               Icon(
                 Icons.location_on_rounded,
                 size: 11,
-                color: colorScheme.onSurface.withOpacity(0.45),
+                color: appColors.textSub.withOpacity(0.45),
               ),
               const SizedBox(width: 2),
               Text(
                 weather.cityName,
-                style: GoogleFonts.nunitoSans(
+                style: TextStyle(
+                  fontFamily: 'Nunito',
                   fontSize: 12,
-                  color: colorScheme.onSurface.withOpacity(0.55),
+                  fontVariations: const [FontVariation('wght', 400.0)],
+                  color: appColors.textSub,
+                  height: 1.3,
                 ),
               ),
             ],
@@ -131,8 +137,6 @@ class _WeatherBarSkeletonState extends State<_WeatherBarSkeleton>
 
   @override
   Widget build(BuildContext context) {
-    final borderColor = Theme.of(context).colorScheme.outlineVariant;
-
     return AnimatedBuilder(
       animation: _opacity,
       builder: (context, _) {
@@ -145,7 +149,7 @@ class _WeatherBarSkeletonState extends State<_WeatherBarSkeleton>
                   width: 26,
                   height: 26,
                   decoration: BoxDecoration(
-                    color: borderColor,
+                    color: appColors.border,
                     borderRadius: BorderRadius.circular(6),
                   ),
                 ),
@@ -155,13 +159,21 @@ class _WeatherBarSkeletonState extends State<_WeatherBarSkeleton>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      _SkeletonLine(width: 40, height: 13, color: borderColor),
+                      _SkeletonLine(
+                        width: 40,
+                        height: 13,
+                        color: appColors.border,
+                      ),
                       const SizedBox(height: 5),
-                      _SkeletonLine(width: 110, height: 11, color: borderColor),
+                      _SkeletonLine(
+                        width: 110,
+                        height: 11,
+                        color: appColors.border,
+                      ),
                     ],
                   ),
                 ),
-                _SkeletonLine(width: 60, height: 11, color: borderColor),
+                _SkeletonLine(width: 60, height: 11, color: appColors.border),
               ],
             ),
           ),
@@ -204,19 +216,24 @@ class _WeatherBarError extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return _WeatherBarShell(
       child: Row(
         children: [
-          Icon(Icons.cloud_off_rounded, size: 20, color: colorScheme.error),
+          Icon(
+            Icons.cloud_off_rounded,
+            size: 20,
+            color: appColors.secondaryGray,
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               'Не удалось получить погоду',
-              style: GoogleFonts.nunitoSans(
+              style: TextStyle(
+                fontFamily: 'Nunito',
                 fontSize: 12,
-                color: colorScheme.onSurface.withOpacity(0.6),
+                fontVariations: const [FontVariation('wght', 400.0)],
+                color: appColors.textSub,
+                height: 1.3,
               ),
             ),
           ),
@@ -224,10 +241,12 @@ class _WeatherBarError extends StatelessWidget {
             onTap: onRetry,
             child: Text(
               'Повторить',
-              style: GoogleFonts.nunitoSans(
+              style: TextStyle(
+                fontFamily: 'Nunito',
                 fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: colorScheme.primary,
+                fontVariations: const [FontVariation('wght', 600.0)],
+                color: appColors.green,
+                height: 1.3,
               ),
             ),
           ),
@@ -237,7 +256,7 @@ class _WeatherBarError extends StatelessWidget {
   }
 }
 
-// ─── Shell (общая обёртка карточки) ──────────────────
+// ─── Shell
 
 class _WeatherBarShell extends StatelessWidget {
   final Widget child;
@@ -249,11 +268,11 @@ class _WeatherBarShell extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: appColors.cardBg,
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF5A7A5E).withOpacity(0.09),
+            color: appColors.green.withOpacity(0.09),
             blurRadius: 12,
             offset: const Offset(0, 2),
           ),

@@ -39,7 +39,7 @@ class Navbar extends StatelessWidget {
             currentIndex: navigationShell.currentIndex,
             onTap: _onTap,
             type: BottomNavigationBarType.fixed,
-            backgroundColor: Color.fromARGB(255, 255, 255, 255),
+            backgroundColor: appColors.cardBg,
             elevation: 0,
             showSelectedLabels: false,
             showUnselectedLabels: false,
