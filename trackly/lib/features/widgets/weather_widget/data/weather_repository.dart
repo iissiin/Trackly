@@ -26,11 +26,9 @@ class WeatherRepository {
       );
     }
 
-    // Сначала пробуем lastKnown — он мгновенный
     final lastKnown = await Geolocator.getLastKnownPosition();
     if (lastKnown != null) return lastKnown;
 
-    // Потом getCurrentPosition с коротким таймаутом
     try {
       return await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.low,

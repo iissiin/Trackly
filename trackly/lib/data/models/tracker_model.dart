@@ -1,113 +1,125 @@
-enum TrackerType { habit, task }
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:trackly/data/models/completion_model.dart';
 
-enum TrackerDay { mon, tue, wed, thu, fri, sat, sun }
+enum TrackerType { habit, irregular }
+
+enum TrackerFilter { active, completed, missed }
+
+enum Weekday { mon, tue, wed, thu, fri, sat, sun }
 
 class TrackerModel {
   final String id;
-  final String uid;
+  final String userId;
   final String title;
-  final String category;
   final String emoji;
-  final String color;
+  final String colorHex;
   final TrackerType type;
-  final List<TrackerDay> scheduledDays; // только для habit
-  final int streak;
-  final List<String> completedDates; // ISO 8601: '2025-03-26'
-  final bool isArchived;
+  final String? categoryId;
   final DateTime createdAt;
+
+  // только для habit
+  final List<Weekday> schedule;
+
+  // только для irregular
+  final DateTime? deadlineDate;
 
   const TrackerModel({
     required this.id,
-    required this.uid,
+    required this.userId,
     required this.title,
-    required this.category,
     required this.emoji,
-    required this.color,
+    required this.colorHex,
     required this.type,
-    this.scheduledDays = const [],
-    this.streak = 0,
-    this.completedDates = const [],
-    this.isArchived = false,
     required this.createdAt,
+    this.categoryId,
+    this.schedule = const [],
+    this.deadlineDate,
   });
 
-  bool isCompletedOn(DateTime date) {
-    final key = _dateKey(date);
-    return completedDates.contains(key);
-  }
-
-  bool get isScheduledToday {
-    if (type == TrackerType.task) return true;
-    final today =
-        TrackerDay.values[(DateTime.now().weekday - 1) %
-            7 // DateTime.monday = 1 → index 0
-            ];
-    return scheduledDays.contains(today);
-  }
-
-  factory TrackerModel.fromMap(String id, Map<String, dynamic> map) {
+  factory TrackerModel.fromJson(Map<String, dynamic> json, String id) {
     return TrackerModel(
       id: id,
-      uid: map['uid'] ?? '',
-      title: map['title'] ?? '',
-      category: map['category'] ?? 'Без категории',
-      emoji: map['emoji'] ?? '💧',
-      color: map['color'] ?? '#7db885',
-      type: TrackerType.values.firstWhere(
-        (e) => e.name == map['type'],
-        orElse: () => TrackerType.habit,
-      ),
-      scheduledDays: (map['scheduledDays'] as List<dynamic>? ?? [])
-          .map((d) => TrackerDay.values.firstWhere((e) => e.name == d))
+      userId: json['userId'] as String,
+      title: json['title'] as String,
+      emoji: json['emoji'] as String,
+      colorHex: json['colorHex'] as String,
+      type: TrackerType.values.byName(json['type'] as String),
+      categoryId: json['categoryId'] as String?,
+      createdAt: (json['createdAt'] as Timestamp).toDate(),
+      schedule: (json['schedule'] as List<dynamic>? ?? [])
+          .map((e) => Weekday.values.byName(e as String))
           .toList(),
-      streak: map['streak'] ?? 0,
-      completedDates: List<String>.from(map['completedDates'] ?? []),
-      isArchived: map['isArchived'] ?? false,
-      createdAt: DateTime.parse(map['createdAt']),
+      deadlineDate: json['deadlineDate'] != null
+          ? (json['deadlineDate'] as Timestamp).toDate()
+          : null,
     );
   }
 
-  Map<String, dynamic> toMap() => {
-    'uid': uid,
+  Map<String, dynamic> toJson() => {
+    'userId': userId,
     'title': title,
-    'category': category,
     'emoji': emoji,
-    'color': color,
+    'colorHex': colorHex,
     'type': type.name,
-    'scheduledDays': scheduledDays.map((d) => d.name).toList(),
-    'streak': streak,
-    'completedDates': completedDates,
-    'isArchived': isArchived,
-    'createdAt': createdAt.toIso8601String(),
+    'categoryId': categoryId,
+    'createdAt': Timestamp.fromDate(createdAt),
+    'schedule': schedule.map((e) => e.name).toList(),
+    'deadlineDate': deadlineDate != null
+        ? Timestamp.fromDate(deadlineDate!)
+        : null,
   };
 
   TrackerModel copyWith({
     String? title,
-    String? category,
     String? emoji,
-    String? color,
-    TrackerType? type,
-    List<TrackerDay>? scheduledDays,
-    int? streak,
-    List<String>? completedDates,
-    bool? isArchived,
+    String? colorHex,
+    String? categoryId,
+    List<Weekday>? schedule,
+    DateTime? deadlineDate,
   }) {
     return TrackerModel(
       id: id,
-      uid: uid,
+      userId: userId,
       title: title ?? this.title,
-      category: category ?? this.category,
       emoji: emoji ?? this.emoji,
-      color: color ?? this.color,
-      type: type ?? this.type,
-      scheduledDays: scheduledDays ?? this.scheduledDays,
-      streak: streak ?? this.streak,
-      completedDates: completedDates ?? this.completedDates,
-      isArchived: isArchived ?? this.isArchived,
+      colorHex: colorHex ?? this.colorHex,
+      type: type,
+      categoryId: categoryId ?? this.categoryId,
       createdAt: createdAt,
+      schedule: schedule ?? this.schedule,
+      deadlineDate: deadlineDate ?? this.deadlineDate,
     );
   }
 
-  static String _dateKey(DateTime date) =>
-      date.toIso8601String().substring(0, 10);
+  bool isScheduledFor(DateTime date) {
+    if (type == TrackerType.irregular) return true;
+    final weekday = Weekday.values[date.weekday - 1];
+    return schedule.contains(weekday);
+  }
+
+  TrackerFilter statusFor(DateTime date, List<CompletionModel> completions) {
+    final done = completions.any(
+      (c) =>
+          c.trackerId == id &&
+          c.date.year == date.year &&
+          c.date.month == date.month &&
+          c.date.day == date.day,
+    );
+
+    if (done) return TrackerFilter.completed;
+
+    if (type == TrackerType.habit) {
+      final scheduled = isScheduledFor(date);
+      final isPast = date.isBefore(
+        DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day),
+      );
+      if (scheduled && isPast) return TrackerFilter.missed;
+      return TrackerFilter.active;
+    } else {
+      if (deadlineDate != null && deadlineDate!.isBefore(DateTime.now())) {
+        return TrackerFilter.missed;
+      }
+      return TrackerFilter.active;
+    }
+  }
 }
