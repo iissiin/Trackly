@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:trackly/features/navigation_bar/navigation_bar.dart';
-import 'package:trackly/features/screens/home_screen/ui/create_tracker_page.dart';
+import 'package:trackly/features/screens/home_screen/ui/create_tracker_elements/create_tracker_page.dart';
 import 'package:trackly/features/screens/home_screen/ui/home_screen.dart';
 import 'package:trackly/features/screens/onboarding/ui/onboarding.dart';
 import 'package:trackly/features/screens/statistic_screen/ui/statisctic_screen.dart';
@@ -55,7 +55,7 @@ final GoRouter router = GoRouter(
           routes: [
             GoRoute(
               path: '/statistics',
-              builder: (context, state) => const statiscticScreen(),
+              builder: (context, state) => const StatiscticScreen(),
             ),
           ],
         ),
@@ -63,7 +63,7 @@ final GoRouter router = GoRouter(
           routes: [
             GoRoute(
               path: '/user',
-              builder: (context, state) => const userScreen(),
+              builder: (context, state) => const UserScreen(),
             ),
           ],
         ),

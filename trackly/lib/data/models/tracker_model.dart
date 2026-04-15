@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:trackly/data/models/completion_model.dart';
 
 enum TrackerType { habit, irregular }
@@ -16,12 +17,9 @@ class TrackerModel {
   final TrackerType type;
   final String? categoryId;
   final DateTime createdAt;
-
-  // только для habit
   final List<Weekday> schedule;
-
-  // только для irregular
   final DateTime? deadlineDate;
+  final TimeOfDay? reminderTime;
 
   const TrackerModel({
     required this.id,
@@ -34,9 +32,18 @@ class TrackerModel {
     this.categoryId,
     this.schedule = const [],
     this.deadlineDate,
+    this.reminderTime,
   });
 
   factory TrackerModel.fromJson(Map<String, dynamic> json, String id) {
+    TimeOfDay? reminderTime;
+    if (json['reminderHour'] != null && json['reminderMinute'] != null) {
+      reminderTime = TimeOfDay(
+        hour: json['reminderHour'] as int,
+        minute: json['reminderMinute'] as int,
+      );
+    }
+
     return TrackerModel(
       id: id,
       userId: json['userId'] as String,
@@ -52,6 +59,7 @@ class TrackerModel {
       deadlineDate: json['deadlineDate'] != null
           ? (json['deadlineDate'] as Timestamp).toDate()
           : null,
+      reminderTime: reminderTime,
     );
   }
 
@@ -67,6 +75,8 @@ class TrackerModel {
     'deadlineDate': deadlineDate != null
         ? Timestamp.fromDate(deadlineDate!)
         : null,
+    'reminderHour': reminderTime?.hour,
+    'reminderMinute': reminderTime?.minute,
   };
 
   TrackerModel copyWith({
@@ -76,6 +86,8 @@ class TrackerModel {
     String? categoryId,
     List<Weekday>? schedule,
     DateTime? deadlineDate,
+    TimeOfDay? reminderTime,
+    bool clearReminder = false,
   }) {
     return TrackerModel(
       id: id,
@@ -88,6 +100,7 @@ class TrackerModel {
       createdAt: createdAt,
       schedule: schedule ?? this.schedule,
       deadlineDate: deadlineDate ?? this.deadlineDate,
+      reminderTime: clearReminder ? null : reminderTime ?? this.reminderTime,
     );
   }
 
@@ -105,7 +118,6 @@ class TrackerModel {
           c.date.month == date.month &&
           c.date.day == date.day,
     );
-
     if (done) return TrackerFilter.completed;
 
     if (type == TrackerType.habit) {

@@ -9,6 +9,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.3.66"
+  adaptive_dialog:
+    dependency: "direct main"
+    description:
+      name: adaptive_dialog
+      sha256: "035755d6f8b309ea4b7ede215fea57025be4a6d89bcb272b1d38654ea2db8ec6"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.7.1"
   animated_list_plus:
     dependency: "direct main"
     description:
@@ -17,6 +25,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.5.2"
+  animations:
+    dependency: transitive
+    description:
+      name: animations
+      sha256: a120785be876b24177e8af387929e786e7761d6574e63cad6c2ca28545b30186
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.1.2"
   ansicolor:
     dependency: transitive
     description:
@@ -25,6 +41,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.3"
+  appkit_ui_element_colors:
+    dependency: transitive
+    description:
+      name: appkit_ui_element_colors
+      sha256: b88a7c35d440fa3ac75222d0e2b7e3259200e531e33b5d2468e358119f3481dc
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
   archive:
     dependency: transitive
     description:
@@ -169,6 +193,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.2.0"
+  dynamic_color:
+    dependency: transitive
+    description:
+      name: dynamic_color
+      sha256: "43a5a6679649a7731ab860334a5812f2067c2d9ce6452cf069c5e0c25336c17c"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.8.1"
   emoji_picker_flutter:
     dependency: "direct main"
     description:
@@ -177,6 +209,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.4.0"
+  equatable:
+    dependency: transitive
+    description:
+      name: equatable
+      sha256: "3e0141505477fd8ad55d6eb4e7776d3fe8430be8e497ccb1521370c3f21a3e2b"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.8"
   fake_async:
     dependency: transitive
     description:
@@ -390,6 +430,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.1.3"
+  flutter_slidable:
+    dependency: "direct main"
+    description:
+      name: flutter_slidable
+      sha256: ea369262929d3cc6ebf9d8a00c196127966f117fe433a5e5cb47fb08008ca203
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.0.3"
   flutter_svg:
     dependency: "direct main"
     description:
@@ -536,6 +584,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.3"
+  gradient_borders:
+    dependency: transitive
+    description:
+      name: gradient_borders
+      sha256: "492bc88ab8d88a4117a7f00e525a669b65f19973bea7ee677f9d9de7603bf037"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.2"
   gsettings:
     dependency: transitive
     description:
@@ -576,6 +632,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.8.0"
+  intersperse:
+    dependency: transitive
+    description:
+      name: intersperse
+      sha256: "2f8a905c96f6cbba978644a3d5b31b8d86ddc44917662df7d27a61f3df66a576"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.0"
   json_annotation:
     dependency: transitive
     description:
@@ -640,6 +704,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.3.0"
+  macos_ui:
+    dependency: transitive
+    description:
+      name: macos_ui
+      sha256: "09fb51d65b6a2d328ba5aa429ba0f7aabad5bc770193ea6e49da9f29bf95d835"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.2.2"
+  macos_window_utils:
+    dependency: transitive
+    description:
+      name: macos_window_utils
+      sha256: cb918e1ff0b31fdaa5cd8631eded7c24bd72e1025cf1f95c819e483f0057c652
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.9.1"
   matcher:
     dependency: transitive
     description:
