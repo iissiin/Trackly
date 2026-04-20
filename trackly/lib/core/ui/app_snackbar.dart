@@ -38,13 +38,11 @@ class AppSnackbar {
           behavior: SnackBarBehavior.floating,
           backgroundColor: Colors.transparent,
           elevation: 0,
-          // ИЗМЕНЕНИЕ: Ширина увеличена за счет уменьшения margin
           margin: const EdgeInsets.fromLTRB(4, 0, 4, 24),
-          // ИЗМЕНЕНИЕ: Твоя любимая кривая на появление + плавная на уход
           animation: CurvedAnimation(
             parent: ProxyAnimation(kAlwaysCompleteAnimation),
-            curve: Curves.easeOutCubic, // Любимая анимация появления
-            reverseCurve: Curves.easeInOutBack, // Плавный "инерционный" уход
+            curve: Curves.easeOutCubic,
+            reverseCurve: Curves.easeInOutBack,
           ),
           content: _SnackbarContent(
             message: message,
@@ -92,7 +90,6 @@ class _SnackbarContentState extends State<_SnackbarContent>
   @override
   void initState() {
     super.initState();
-    // Контроллер для плавного исчезновения (Fade Out)
     _fadeController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 400),
@@ -103,7 +100,6 @@ class _SnackbarContentState extends State<_SnackbarContent>
       end: 0.0,
     ).animate(CurvedAnimation(parent: _fadeController, curve: Curves.easeIn));
 
-    // Запускаем растворение за 400мс до конца показа
     Future.delayed(widget.duration - const Duration(milliseconds: 400), () {
       if (mounted) _fadeController.forward();
     });
@@ -117,10 +113,8 @@ class _SnackbarContentState extends State<_SnackbarContent>
 
   @override
   Widget build(BuildContext context) {
-    // ИЗМЕНЕНИЕ: FadeTransition отвечает за плавное исчезновение в конце
     return FadeTransition(
       opacity: _fadeOutAnimation,
-      // ИЗМЕНЕНИЕ: Твой любимый TweenAnimationBuilder для появления
       child: TweenAnimationBuilder<double>(
         tween: Tween(begin: 0.0, end: 1.0),
         duration: const Duration(milliseconds: 300),

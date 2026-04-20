@@ -27,7 +27,7 @@ class TrackerList extends StatelessWidget {
           sizeFraction: 0.7,
           curve: Curves.easeInOut,
           animation: animation,
-          child: _buildCard(context, tracker),
+          child: _TrackerListItem(tracker: tracker, state: state),
         );
       },
       removeItemBuilder: (context, animation, oldItem) {
@@ -36,19 +36,52 @@ class TrackerList extends StatelessWidget {
           sizeFraction: 0.7,
           curve: Curves.easeInOut,
           animation: animation,
-          child: _buildCard(context, oldItem),
+          child: _TrackerListItem(tracker: oldItem, state: state),
         );
       },
     );
   }
+}
 
-  Widget _buildCard(BuildContext context, TrackerModel tracker) {
+class _TrackerListItem extends StatefulWidget {
+  final TrackerModel tracker;
+  final TrackerLoaded state;
+
+  const _TrackerListItem({required this.tracker, required this.state});
+
+  @override
+  State<_TrackerListItem> createState() => _TrackerListItemState();
+}
+
+class _TrackerListItemState extends State<_TrackerListItem>
+    with SingleTickerProviderStateMixin {
+  late final SlidableController _slidableController;
+
+  @override
+  void initState() {
+    super.initState();
+    _slidableController = SlidableController(this);
+  }
+
+  @override
+  void dispose() {
+    _slidableController.dispose();
+    super.dispose();
+  }
+
+  bool get _isOpen => _slidableController.ratio != 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final tracker = widget.tracker;
+    final state = widget.state;
     final isDone =
         tracker.statusFor(state.selectedDate, state.completions) ==
         TrackerFilter.completed;
 
     return Slidable(
       key: ValueKey(tracker.id),
+      controller: _slidableController,
       endActionPane: ActionPane(
         motion: const StretchMotion(),
         extentRatio: 0.35,
@@ -84,10 +117,18 @@ class TrackerList extends StatelessWidget {
         tracker: tracker,
         completions: state.completions,
         selectedDate: state.selectedDate,
-        onToggle: () => context.read<TrackerBloc>().add(
-          TrackerMarkToggled(tracker.id, isDone: isDone),
-        ),
-        onDelete: null,
+        onCardTap: () {
+          if (_isOpen) _slidableController.close();
+        },
+        onToggle: () {
+          if (_isOpen) {
+            _slidableController.close();
+            return;
+          }
+          context.read<TrackerBloc>().add(
+            TrackerMarkToggled(tracker.id, isDone: isDone),
+          );
+        },
       ),
     );
   }

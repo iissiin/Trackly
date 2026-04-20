@@ -7,6 +7,7 @@ class TrackerCard extends StatefulWidget {
   final List<CompletionModel> completions;
   final DateTime selectedDate;
   final VoidCallback? onToggle;
+  final VoidCallback? onCardTap;
 
   const TrackerCard({
     super.key,
@@ -14,7 +15,7 @@ class TrackerCard extends StatefulWidget {
     required this.completions,
     required this.selectedDate,
     this.onToggle,
-    required onDelete,
+    this.onCardTap,
   });
 
   @override
@@ -65,10 +66,9 @@ class _TrackerCardState extends State<TrackerCard>
       TrackerFilter.missed;
 
   Color get _accent => Color(int.parse('0xFF${widget.tracker.colorHex}'));
-
   Color get _accentBg => _accent.withValues(alpha: 0.18);
 
-  void _handleTap() {
+  void _handleToggle() {
     widget.onToggle?.call();
     if (!_isDone) {
       _checkController.forward().then((_) => _checkController.reverse());
@@ -83,7 +83,7 @@ class _TrackerCardState extends State<TrackerCard>
       onTapDown: (_) => setState(() => _isPressed = true),
       onTapUp: (_) {
         setState(() => _isPressed = false);
-        _handleTap();
+        widget.onCardTap?.call();
       },
       onTapCancel: () => setState(() => _isPressed = false),
       child: AnimatedScale(
@@ -173,11 +173,11 @@ class _TrackerCardState extends State<TrackerCard>
 
               const SizedBox(width: 10),
 
-              // Check button
+              // Check button — только здесь toggle
               ScaleTransition(
                 scale: _checkScale,
                 child: GestureDetector(
-                  onTap: _handleTap,
+                  onTap: _handleToggle,
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 250),
                     width: 44,

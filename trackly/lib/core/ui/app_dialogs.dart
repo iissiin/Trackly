@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 class AppDialogs {
   AppDialogs._();
 
-  /// Диалог подтверждения удаления. Возвращает true если подтвердили.
   static Future<bool> confirmDelete(
     BuildContext context, {
     String title = 'Удалить?',
@@ -23,7 +22,6 @@ class AppDialogs {
     return result == OkCancelResult.ok;
   }
 
-  /// Универсальный диалог с одной кнопкой OK.
   static Future<void> info(
     BuildContext context, {
     required String title,
@@ -39,7 +37,6 @@ class AppDialogs {
     );
   }
 
-  /// Диалог с произвольными действиями.
   static Future<T?> actions<T>(
     BuildContext context, {
     required String title,

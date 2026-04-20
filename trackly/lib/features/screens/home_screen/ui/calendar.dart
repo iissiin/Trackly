@@ -19,12 +19,14 @@ class _CalendarStripState extends State<CalendarStrip> {
   static const int _initialPage = 500;
   late PageController _pageController;
   late DateTime _today;
+  late int _currentPageOffset;
 
   @override
   void initState() {
     super.initState();
     _today = _stripTime(DateTime.now());
     _pageController = PageController(initialPage: _initialPage);
+    _currentPageOffset = 0;
   }
 
   @override
@@ -45,7 +47,11 @@ class _CalendarStripState extends State<CalendarStrip> {
     return List.generate(7, (i) => start.add(Duration(days: i)));
   }
 
-  String _monthName(DateTime dt) {
+  String _formatHeaderTitle(int offset) {
+    final days = _daysOfWeek(offset);
+    final firstDay = days.first;
+    final lastDay = days.last;
+
     const months = [
       'Январь',
       'Февраль',
@@ -60,7 +66,19 @@ class _CalendarStripState extends State<CalendarStrip> {
       'Ноябрь',
       'Декабрь',
     ];
-    return '${months[dt.month - 1]} ${dt.year}';
+
+    if (firstDay.month == lastDay.month) {
+      return '${months[firstDay.month - 1]} ${firstDay.year}';
+    } else {
+      final firstMonthName = months[firstDay.month - 1];
+      final lastMonthName = months[lastDay.month - 1];
+
+      if (firstDay.year == lastDay.year) {
+        return '$firstMonthName – $lastMonthName ${firstDay.year}';
+      } else {
+        return '$firstMonthName ${firstDay.year} – $lastMonthName ${lastDay.year}';
+      }
+    }
   }
 
   String _shortWeekday(int weekday) {
@@ -76,8 +94,9 @@ class _CalendarStripState extends State<CalendarStrip> {
         const SizedBox(height: 16),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
+          // ТЕПЕРЬ БЕЗ АНИМАЦИИ: просто текст, который перерисовывается через setState
           child: Text(
-            _monthName(widget.selectedDate),
+            _formatHeaderTitle(_currentPageOffset),
             style: TextStyle(
               fontFamily: 'Nunito',
               fontSize: 17,
@@ -91,6 +110,13 @@ class _CalendarStripState extends State<CalendarStrip> {
           height: 78,
           child: PageView.builder(
             controller: _pageController,
+            physics:
+                const ClampingScrollPhysics(), // Более "строгий" скролл без пружинистости
+            onPageChanged: (page) {
+              setState(() {
+                _currentPageOffset = page - _initialPage;
+              });
+            },
             itemBuilder: (context, page) {
               final offset = page - _initialPage;
               final days = _daysOfWeek(offset);
@@ -103,8 +129,8 @@ class _CalendarStripState extends State<CalendarStrip> {
                     final isSelected = day == _stripTime(widget.selectedDate);
                     return GestureDetector(
                       onTap: () => widget.onDateChanged(day),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
+                      child: Container(
+                        // Заменили AnimatedContainer на обычный Container
                         width: 53,
                         height: 75,
                         decoration: BoxDecoration(
@@ -128,7 +154,7 @@ class _CalendarStripState extends State<CalendarStrip> {
                                   FontVariation('wght', 600),
                                 ],
                                 color: isSelected
-                                    ? Colors.white.withValues(alpha: 0.75)
+                                    ? Colors.white.withOpacity(0.75)
                                     : appColors.textSub,
                                 letterSpacing: 0.6,
                               ),
@@ -155,11 +181,9 @@ class _CalendarStripState extends State<CalendarStrip> {
                                 shape: BoxShape.circle,
                                 color: isToday
                                     ? (isSelected
-                                          ? appColors.white.withValues(
-                                              alpha: 0.55,
-                                            )
-                                          : appColors.greenDark.withValues(
-                                              alpha: 0.5,
+                                          ? appColors.white.withOpacity(0.55)
+                                          : appColors.greenDark.withOpacity(
+                                              0.5,
                                             ))
                                     : Colors.transparent,
                               ),
