@@ -3,8 +3,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:trackly/data/models/tracker_model.dart';
 import 'package:trackly/features/navigation_bar/navigation_bar.dart';
 import 'package:trackly/features/screens/home_screen/ui/create_tracker_elements/create_tracker_page.dart';
+import 'package:trackly/features/screens/home_screen/ui/edit_tracker_page.dart';
 import 'package:trackly/features/screens/home_screen/ui/home_screen.dart';
 import 'package:trackly/features/screens/onboarding/ui/onboarding.dart';
 import 'package:trackly/features/screens/statistic_screen/ui/statisctic_screen.dart';
@@ -22,7 +24,6 @@ final GoRouter router = GoRouter(
     final isOnOnboarding = state.matchedLocation == '/onboarding';
 
     if (!isLoggedIn && !isOnOnboarding) return '/onboarding';
-
     if (isLoggedIn && isOnOnboarding) return '/home';
 
     return null;
@@ -37,6 +38,14 @@ final GoRouter router = GoRouter(
       path: '/tracker/create',
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const CreateTrackerPage(),
+    ),
+    GoRoute(
+      path: '/tracker/edit/:id',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) {
+        final tracker = state.extra as TrackerModel;
+        return EditTrackerPage(tracker: tracker);
+      },
     ),
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {

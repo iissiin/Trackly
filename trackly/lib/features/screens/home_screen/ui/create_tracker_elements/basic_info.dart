@@ -5,9 +5,28 @@ import 'package:trackly/core/theme/app_colors.dart';
 import 'package:trackly/features/screens/home_screen/bloc/create_tracker_bloc.dart';
 import 'package:trackly/features/screens/home_screen/ui/create_tracker_elements/shared_card.dart';
 
-class BasicInfoSection extends StatelessWidget {
+class BasicInfoSection extends StatefulWidget {
   final CreateTrackerState state;
   const BasicInfoSection({super.key, required this.state});
+
+  @override
+  State<BasicInfoSection> createState() => _BasicInfoSectionState();
+}
+
+class _BasicInfoSectionState extends State<BasicInfoSection> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.state.title);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +64,10 @@ class BasicInfoSection extends StatelessWidget {
                     ),
                   ),
                   const Spacer(),
-                  Text(state.emoji, style: const TextStyle(fontSize: 24)),
+                  Text(
+                    widget.state.emoji,
+                    style: const TextStyle(fontSize: 24),
+                  ),
                   const SizedBox(width: 4),
                   Icon(
                     Icons.chevron_right_rounded,
@@ -61,6 +83,7 @@ class BasicInfoSection extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             child: TextField(
               maxLength: 80,
+              controller: _controller,
               buildCounter:
                   (
                     _, {

@@ -26,6 +26,10 @@ class TrackerRepository {
     await _trackers(tracker.userId).doc(tracker.id).set(tracker.toJson());
   }
 
+  Future<void> updateTracker(TrackerModel tracker) async {
+    await _trackers(tracker.userId).doc(tracker.id).update(tracker.toJson());
+  }
+
   Future<void> deleteTracker(String uid, String trackerId) async {
     await _trackers(uid).doc(trackerId).delete();
     final completions = await _completions(

@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+// ignore: camel_case_types
 class appColors {
   static const Color white = Color(0xFFF0F0F1);
   static const Color black = Color(0xFF000000);

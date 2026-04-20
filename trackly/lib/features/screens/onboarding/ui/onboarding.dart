@@ -41,7 +41,7 @@ class _OnboardingBody extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           stops: [0.6, 1.0],
-          colors: [appColors.mint],
+          colors: [appColors.mint, Colors.white],
         ),
       ),
       child: Stack(

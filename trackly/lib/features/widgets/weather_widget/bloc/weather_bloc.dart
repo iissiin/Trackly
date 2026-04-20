@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:trackly/data/models/weather_model.dart';
-import 'package:trackly/features/widgets/weather_widget/data/weather_repository.dart';
+import 'package:trackly/data/repositories/weather_repository.dart';
 
 abstract class WeatherEvent {}
 

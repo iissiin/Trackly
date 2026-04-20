@@ -3,6 +3,7 @@ import 'package:animated_list_plus/transitions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:go_router/go_router.dart';
 import 'package:trackly/core/theme/app_colors.dart';
 import 'package:trackly/data/models/tracker_model.dart';
 import 'package:trackly/features/screens/home_screen/bloc/tracker_bloc.dart';
@@ -10,7 +11,6 @@ import 'package:trackly/features/screens/home_screen/ui/tracker_card.dart';
 
 class TrackerList extends StatelessWidget {
   final TrackerLoaded state;
-
   const TrackerList({super.key, required this.state});
 
   @override
@@ -25,7 +25,7 @@ class TrackerList extends StatelessWidget {
           sizeFraction: 0.7,
           curve: Curves.easeInOut,
           animation: animation,
-          child: _buildDismissibleCard(context, tracker),
+          child: _buildCard(context, tracker),
         );
       },
       removeItemBuilder: (context, animation, oldItem) {
@@ -34,34 +34,32 @@ class TrackerList extends StatelessWidget {
           sizeFraction: 0.7,
           curve: Curves.easeInOut,
           animation: animation,
-          child: _buildDismissibleCard(context, oldItem),
+          child: _buildCard(context, oldItem),
         );
       },
     );
   }
 
-  Widget _buildDismissibleCard(BuildContext context, TrackerModel tracker) {
+  Widget _buildCard(BuildContext context, TrackerModel tracker) {
     final isDone =
         tracker.statusFor(state.selectedDate, state.completions) ==
         TrackerFilter.completed;
 
     return Slidable(
       key: ValueKey(tracker.id),
-
       endActionPane: ActionPane(
         motion: const StretchMotion(),
         extentRatio: 0.35,
         children: [
           SlidableAction(
             onPressed: (_) {
-              // TODO: реализовать редактирование трекера
+              context.push('/tracker/edit/${tracker.id}', extra: tracker);
             },
             backgroundColor: Colors.transparent,
             foregroundColor: appColors.greenDark,
             icon: Icons.edit_rounded,
             spacing: 8,
           ),
-
           SlidableAction(
             onPressed: (_) {
               context.read<TrackerBloc>().add(TrackerDeleted(tracker.id));
@@ -73,7 +71,6 @@ class TrackerList extends StatelessWidget {
           ),
         ],
       ),
-
       child: TrackerCard(
         tracker: tracker,
         completions: state.completions,

@@ -148,7 +148,6 @@ class _CalendarStripState extends State<CalendarStrip> {
                               ),
                             ),
                             const SizedBox(height: 4),
-                            // точка для сегодняшнего дня
                             Container(
                               width: 4,
                               height: 4,

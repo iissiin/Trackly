@@ -78,6 +78,21 @@ class CreateTrackerCubit extends Cubit<CreateTrackerState> {
 
   CreateTrackerCubit(this._repo) : super(const CreateTrackerState());
 
+  // Фабричный конструктор для редактирования — prefill из существующего трекера
+  CreateTrackerCubit.fromTracker(this._repo, TrackerModel t)
+    : super(
+        CreateTrackerState(
+          title: t.title,
+          emoji: t.emoji,
+          colorHex: t.colorHex,
+          type: t.type,
+          categoryId: t.categoryId,
+          schedule: List.from(t.schedule),
+          deadlineDate: t.deadlineDate,
+          reminderTime: t.reminderTime,
+        ),
+      );
+
   void setReminderTime(TimeOfDay? t) {
     if (t == null) {
       emit(state.copyWith(clearReminder: true));
@@ -140,6 +155,35 @@ class CreateTrackerCubit extends Cubit<CreateTrackerState> {
         reminderTime: state.reminderTime,
       );
       await _repo.createTracker(tracker);
+      return true;
+    } catch (e) {
+      emit(state.copyWith(isSubmitting: false, error: e.toString()));
+      return false;
+    }
+  }
+
+  Future<bool> update(
+    String trackerId,
+    String userId,
+    DateTime createdAt,
+  ) async {
+    if (!state.isValid) return false;
+    emit(state.copyWith(isSubmitting: true));
+    try {
+      final updated = TrackerModel(
+        id: trackerId,
+        userId: userId,
+        title: state.title.trim(),
+        emoji: state.emoji,
+        colorHex: state.colorHex,
+        type: state.type,
+        categoryId: state.categoryId,
+        createdAt: createdAt,
+        schedule: state.schedule,
+        deadlineDate: state.deadlineDate,
+        reminderTime: state.reminderTime,
+      );
+      await _repo.updateTracker(updated);
       return true;
     } catch (e) {
       emit(state.copyWith(isSubmitting: false, error: e.toString()));
