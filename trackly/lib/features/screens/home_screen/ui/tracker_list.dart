@@ -5,6 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:go_router/go_router.dart';
 import 'package:trackly/core/theme/app_colors.dart';
+import 'package:trackly/core/ui/app_dialogs.dart';
+import 'package:trackly/core/ui/app_snackbar.dart';
 import 'package:trackly/data/models/tracker_model.dart';
 import 'package:trackly/features/screens/home_screen/bloc/tracker_bloc.dart';
 import 'package:trackly/features/screens/home_screen/ui/tracker_card.dart';
@@ -61,8 +63,15 @@ class TrackerList extends StatelessWidget {
             spacing: 8,
           ),
           SlidableAction(
-            onPressed: (_) {
-              context.read<TrackerBloc>().add(TrackerDeleted(tracker.id));
+            onPressed: (_) async {
+              final confirmed = await AppDialogs.confirmDelete(
+                context,
+                message: 'Трекер будет удалён.',
+              );
+              if (confirmed && context.mounted) {
+                context.read<TrackerBloc>().add(TrackerDeleted(tracker.id));
+                AppSnackbar.success(context, 'Удалено');
+              }
             },
             backgroundColor: Colors.transparent,
             foregroundColor: appColors.accent,
