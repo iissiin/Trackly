@@ -1,7 +1,6 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
-import 'package:sizer/sizer.dart';
 import 'package:trackly/core/theme/app_colors.dart';
 
 class CalendarStrip extends StatefulWidget {
@@ -90,29 +89,28 @@ class _CalendarStripState extends State<CalendarStrip> {
 
   @override
   Widget build(BuildContext context) {
-    // Ширина одной карточки: (экран - 2 * горизонтальный padding) / 7
-    // Sizer: 100.w = ширина экрана
-    final double horizontalPadding = 3.w; // ~14px на 360px экране
-    final double cardWidth = (100.w - horizontalPadding * 2) / 7;
-    final double cardHeight = cardWidth * 1.4; // соотношение сторон
+    final screenWidth = MediaQuery.of(context).size.width;
+    final horizontalPadding = screenWidth * 0.038;
+    final cardWidth = (screenWidth - horizontalPadding * 2) / 7 * 0.93;
+    final cardHeight = cardWidth * 1.4;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(height: 2.h),
+        const SizedBox(height: 16),
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: 5.w),
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.055),
           child: Text(
             _formatHeaderTitle(_currentPageOffset),
             style: TextStyle(
               fontFamily: 'Nunito',
-              fontSize: 13.sp,
+              fontSize: screenWidth * 0.040,
               color: appColors.text,
               fontVariations: const [FontVariation('wght', 700)],
             ),
           ),
         ),
-        SizedBox(height: 1.5.h),
+        const SizedBox(height: 12),
         SizedBox(
           height: cardHeight,
           child: PageView.builder(
@@ -142,7 +140,7 @@ class _CalendarStripState extends State<CalendarStrip> {
                           color: isSelected
                               ? appColors.green
                               : appColors.cardBg,
-                          borderRadius: BorderRadius.circular(3.5.w),
+                          borderRadius: BorderRadius.circular(cardWidth * 0.26),
                           border: isSelected
                               ? null
                               : Border.all(color: appColors.border, width: 1),
@@ -154,9 +152,9 @@ class _CalendarStripState extends State<CalendarStrip> {
                               _shortWeekday(day.weekday),
                               style: TextStyle(
                                 fontFamily: 'Nunito',
-                                fontSize: 7.sp,
+                                fontSize: screenWidth * 0.020,
                                 fontVariations: const [
-                                  FontVariation('wght', 600),
+                                  FontVariation('wght', 400),
                                 ],
                                 color: isSelected
                                     ? Colors.white.withOpacity(0.75)
@@ -164,12 +162,12 @@ class _CalendarStripState extends State<CalendarStrip> {
                                 letterSpacing: 0.6,
                               ),
                             ),
-                            SizedBox(height: 0.4.h),
+                            SizedBox(height: cardHeight * 0.04),
                             Text(
                               '${day.day}',
                               style: TextStyle(
                                 fontFamily: 'Nunito',
-                                fontSize: 14.sp,
+                                fontSize: screenWidth * 0.048,
                                 fontVariations: const [
                                   FontVariation('wght', 700),
                                 ],
@@ -178,10 +176,10 @@ class _CalendarStripState extends State<CalendarStrip> {
                                     : appColors.text,
                               ),
                             ),
-                            SizedBox(height: 0.5.h),
+                            SizedBox(height: cardHeight * 0.05),
                             Container(
-                              width: 1.w,
-                              height: 1.w,
+                              width: screenWidth * 0.011,
+                              height: screenWidth * 0.011,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 color: isToday
