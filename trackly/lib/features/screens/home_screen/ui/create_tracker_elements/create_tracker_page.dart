@@ -190,7 +190,7 @@ class _SubmitButton extends StatelessWidget {
           : () async {
               final success = await context.read<CreateTrackerCubit>().submit();
               if (success && context.mounted) {
-                AppSnackbar.success(context, 'Трекер добавлен 🎉');
+                AppSnackbar.success(context, 'Трекер добавлен');
                 context.pop();
               }
             },

@@ -1,4 +1,7 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
+import 'package:sizer/sizer.dart';
 import 'package:trackly/core/theme/app_colors.dart';
 
 class CalendarStrip extends StatefulWidget {
@@ -72,7 +75,6 @@ class _CalendarStripState extends State<CalendarStrip> {
     } else {
       final firstMonthName = months[firstDay.month - 1];
       final lastMonthName = months[lastDay.month - 1];
-
       if (firstDay.year == lastDay.year) {
         return '$firstMonthName – $lastMonthName ${firstDay.year}';
       } else {
@@ -88,30 +90,34 @@ class _CalendarStripState extends State<CalendarStrip> {
 
   @override
   Widget build(BuildContext context) {
+    // Ширина одной карточки: (экран - 2 * горизонтальный padding) / 7
+    // Sizer: 100.w = ширина экрана
+    final double horizontalPadding = 3.w; // ~14px на 360px экране
+    final double cardWidth = (100.w - horizontalPadding * 2) / 7;
+    final double cardHeight = cardWidth * 1.4; // соотношение сторон
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 16),
+        SizedBox(height: 2.h),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          // ТЕПЕРЬ БЕЗ АНИМАЦИИ: просто текст, который перерисовывается через setState
+          padding: EdgeInsets.symmetric(horizontal: 5.w),
           child: Text(
             _formatHeaderTitle(_currentPageOffset),
             style: TextStyle(
               fontFamily: 'Nunito',
-              fontSize: 17,
+              fontSize: 13.sp,
               color: appColors.text,
               fontVariations: const [FontVariation('wght', 700)],
             ),
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 1.5.h),
         SizedBox(
-          height: 78,
+          height: cardHeight,
           child: PageView.builder(
             controller: _pageController,
-            physics:
-                const ClampingScrollPhysics(), // Более "строгий" скролл без пружинистости
+            physics: const ClampingScrollPhysics(),
             onPageChanged: (page) {
               setState(() {
                 _currentPageOffset = page - _initialPage;
@@ -121,7 +127,7 @@ class _CalendarStripState extends State<CalendarStrip> {
               final offset = page - _initialPage;
               final days = _daysOfWeek(offset);
               return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 14),
+                padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: days.map((day) {
@@ -130,14 +136,13 @@ class _CalendarStripState extends State<CalendarStrip> {
                     return GestureDetector(
                       onTap: () => widget.onDateChanged(day),
                       child: Container(
-                        // Заменили AnimatedContainer на обычный Container
-                        width: 53,
-                        height: 75,
+                        width: cardWidth,
+                        height: cardHeight,
                         decoration: BoxDecoration(
                           color: isSelected
                               ? appColors.green
                               : appColors.cardBg,
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(3.5.w),
                           border: isSelected
                               ? null
                               : Border.all(color: appColors.border, width: 1),
@@ -149,7 +154,7 @@ class _CalendarStripState extends State<CalendarStrip> {
                               _shortWeekday(day.weekday),
                               style: TextStyle(
                                 fontFamily: 'Nunito',
-                                fontSize: 9,
+                                fontSize: 7.sp,
                                 fontVariations: const [
                                   FontVariation('wght', 600),
                                 ],
@@ -159,12 +164,12 @@ class _CalendarStripState extends State<CalendarStrip> {
                                 letterSpacing: 0.6,
                               ),
                             ),
-                            const SizedBox(height: 3),
+                            SizedBox(height: 0.4.h),
                             Text(
                               '${day.day}',
                               style: TextStyle(
                                 fontFamily: 'Nunito',
-                                fontSize: 18,
+                                fontSize: 14.sp,
                                 fontVariations: const [
                                   FontVariation('wght', 700),
                                 ],
@@ -173,10 +178,10 @@ class _CalendarStripState extends State<CalendarStrip> {
                                     : appColors.text,
                               ),
                             ),
-                            const SizedBox(height: 4),
+                            SizedBox(height: 0.5.h),
                             Container(
-                              width: 4,
-                              height: 4,
+                              width: 1.w,
+                              height: 1.w,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 color: isToday
