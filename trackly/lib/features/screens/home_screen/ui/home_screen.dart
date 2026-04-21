@@ -70,9 +70,7 @@ class _HomeView extends StatelessWidget {
                   if (state is TrackerLoading) {
                     return const Center(child: CircularProgressIndicator());
                   }
-                  if (state is! TrackerLoaded || state.filtered.isEmpty) {
-                    return const SizedBox();
-                  }
+                  if (state is! TrackerLoaded) return const SizedBox();
                   return TrackerList(state: state);
                 },
               ),

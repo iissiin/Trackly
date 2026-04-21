@@ -63,7 +63,7 @@ class TrackerModel {
     );
   }
 
-  get name => null;
+  Null get name => null;
 
   Map<String, dynamic> toJson() => {
     'userId': userId,

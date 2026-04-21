@@ -17,28 +17,110 @@ class TrackerList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ImplicitlyAnimatedList<TrackerModel>(
-      items: state.filtered,
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-      areItemsTheSame: (a, b) => a.id == b.id,
-      itemBuilder: (context, animation, tracker, i) {
-        return SizeFadeTransition(
-          key: ValueKey(tracker.id),
-          sizeFraction: 0.7,
-          curve: Curves.easeInOut,
-          animation: animation,
-          child: _TrackerListItem(tracker: tracker, state: state),
-        );
-      },
-      removeItemBuilder: (context, animation, oldItem) {
-        return SizeFadeTransition(
-          key: ValueKey(oldItem.id),
-          sizeFraction: 0.7,
-          curve: Curves.easeInOut,
-          animation: animation,
-          child: _TrackerListItem(tracker: oldItem, state: state),
-        );
-      },
+    final isEmpty = state.filtered.isEmpty;
+
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      switchInCurve: Curves.easeOut,
+      switchOutCurve: Curves.easeIn,
+      transitionBuilder: (child, animation) => FadeTransition(
+        opacity: animation,
+        child: SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0, 0.05),
+            end: Offset.zero,
+          ).animate(animation),
+          child: child,
+        ),
+      ),
+      child: isEmpty
+          ? _EmptyState(
+              key: ValueKey('empty_${state.activeFilter.name}'),
+              filter: state.activeFilter,
+            )
+          : ImplicitlyAnimatedList<TrackerModel>(
+              key: ValueKey('list_${state.activeFilter.name}'),
+              items: state.filtered,
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+              areItemsTheSame: (a, b) => a.id == b.id,
+              itemBuilder: (context, animation, tracker, i) {
+                return SizeFadeTransition(
+                  key: ValueKey(tracker.id),
+                  sizeFraction: 0.7,
+                  curve: Curves.easeInOut,
+                  animation: animation,
+                  child: _TrackerListItem(tracker: tracker, state: state),
+                );
+              },
+              removeItemBuilder: (context, animation, oldItem) {
+                return SizeFadeTransition(
+                  key: ValueKey(oldItem.id),
+                  sizeFraction: 0.7,
+                  curve: Curves.easeInOut,
+                  animation: animation,
+                  child: _TrackerListItem(tracker: oldItem, state: state),
+                );
+              },
+            ),
+    );
+  }
+}
+
+class _EmptyState extends StatelessWidget {
+  final TrackerFilter filter;
+
+  const _EmptyState({super.key, required this.filter});
+
+  ({String title, String subtitle}) get _content => switch (filter) {
+    TrackerFilter.active => (
+      title: 'На сегодня всё',
+      subtitle: 'Нет активных трекеров.\nДобавьте новый или измените фильтр.',
+    ),
+    TrackerFilter.completed => (
+      title: 'Пока ничего не выполнено',
+      subtitle: 'Отмечайте трекеры как выполненные,\nи они появятся здесь.',
+    ),
+    TrackerFilter.missed => (
+      title: 'Ничего не пропущено',
+      subtitle: 'Отлично! Все трекеры в порядке.',
+    ),
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final c = _content;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 28, 20, 100),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              c.title,
+              style: const TextStyle(
+                fontFamily: 'Nunito',
+                fontSize: 15,
+                fontVariations: [FontVariation('wght', 700)],
+                color: appColors.text,
+              ),
+            ),
+            const SizedBox(height: 5),
+            Text(
+              c.subtitle,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontFamily: 'Nunito',
+                fontSize: 13,
+                fontVariations: [FontVariation('wght', 500)],
+                color: appColors.textSub,
+                height: 1.5,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
