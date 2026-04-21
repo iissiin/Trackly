@@ -2,6 +2,52 @@ import 'package:flutter/material.dart';
 import 'package:trackly/data/models/completion_model.dart';
 import 'package:trackly/data/models/tracker_model.dart';
 
+class _CheckmarkPainter extends CustomPainter {
+  final double progress;
+  final Color color;
+
+  _CheckmarkPainter({required this.progress, required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (progress == 0) return;
+
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 1.5
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..style = PaintingStyle.stroke;
+
+    final p1 = Offset(size.width * 0.25, size.height * 0.50);
+    final p2 = Offset(size.width * 0.42, size.height * 0.70);
+    final p3 = Offset(size.width * 0.72, size.height * 0.35);
+
+    final seg1Len = (p2 - p1).distance;
+    final seg2Len = (p3 - p2).distance;
+    final totalLen = seg1Len + seg2Len;
+
+    final drawn = progress * totalLen;
+
+    final path = Path();
+    path.moveTo(p1.dx, p1.dy);
+
+    if (drawn <= seg1Len) {
+      final t = drawn / seg1Len;
+      path.lineTo(p1.dx + (p2.dx - p1.dx) * t, p1.dy + (p2.dy - p1.dy) * t);
+    } else {
+      path.lineTo(p2.dx, p2.dy);
+      final t = (drawn - seg1Len) / seg2Len;
+      path.lineTo(p2.dx + (p3.dx - p2.dx) * t, p2.dy + (p3.dy - p2.dy) * t);
+    }
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(_CheckmarkPainter old) => old.progress != progress;
+}
+
 class TrackerCard extends StatefulWidget {
   final TrackerModel tracker;
   final List<CompletionModel> completions;
@@ -28,17 +74,21 @@ class _TrackerCardState extends State<TrackerCard>
     with SingleTickerProviderStateMixin {
   bool _isPressed = false;
   late AnimationController _checkController;
-  late Animation<double> _checkScale;
+  late Animation<double> _checkProgress;
 
   @override
   void initState() {
     super.initState();
     _checkController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 200),
+      duration: const Duration(milliseconds: 450),
     );
-    _checkScale = Tween<double>(begin: 1.0, end: 0.85).animate(
-      CurvedAnimation(parent: _checkController, curve: Curves.easeInOut),
+    _checkProgress = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _checkController,
+        curve: Curves.easeOut,
+        reverseCurve: Curves.easeIn,
+      ),
     );
     if (_isDone) _checkController.value = 1.0;
   }
@@ -72,11 +122,6 @@ class _TrackerCardState extends State<TrackerCard>
 
   void _handleToggle() {
     widget.onToggle?.call();
-    if (!_isDone) {
-      _checkController.forward().then((_) => _checkController.reverse());
-    } else {
-      _checkController.reverse();
-    }
   }
 
   String? _metaText() {
@@ -143,13 +188,10 @@ class _TrackerCardState extends State<TrackerCard>
                   children: [
                     Text(
                       widget.tracker.title,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontFamily: 'Nunito',
                         fontSize: 14,
-                        fontVariations: const [FontVariation('wght', 700)],
-                        decoration: _isDone
-                            ? TextDecoration.lineThrough
-                            : TextDecoration.none,
+                        fontVariations: [FontVariation('wght', 700)],
                       ),
                     ),
                     if (_hasSubtext) ...[
@@ -197,27 +239,26 @@ class _TrackerCardState extends State<TrackerCard>
               const SizedBox(width: 10),
 
               // Check button
-              ScaleTransition(
-                scale: _checkScale,
-                child: GestureDetector(
-                  onTap: _handleToggle,
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 250),
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: _isDone
-                          ? _accent
-                          : _accent.withValues(alpha: 0.25),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.check,
-                      size: 16,
-                      color: _isDone
-                          ? Colors.white
-                          : _accent.withValues(alpha: 0.65),
-                    ),
+              GestureDetector(
+                onTap: _handleToggle,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: _isDone ? _accent : _accent.withValues(alpha: 0.25),
+                    shape: BoxShape.circle,
+                  ),
+                  child: AnimatedBuilder(
+                    animation: _checkProgress,
+                    builder: (context, _) {
+                      return CustomPaint(
+                        painter: _CheckmarkPainter(
+                          progress: _checkProgress.value,
+                          color: Colors.white,
+                        ),
+                      );
+                    },
                   ),
                 ),
               ),
