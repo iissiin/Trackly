@@ -6,6 +6,7 @@ class TrackerCard extends StatefulWidget {
   final TrackerModel tracker;
   final List<CompletionModel> completions;
   final DateTime selectedDate;
+  final String? categoryName;
   final VoidCallback? onToggle;
   final VoidCallback? onCardTap;
 
@@ -14,6 +15,7 @@ class TrackerCard extends StatefulWidget {
     required this.tracker,
     required this.completions,
     required this.selectedDate,
+    this.categoryName,
     this.onToggle,
     this.onCardTap,
   });
@@ -77,8 +79,24 @@ class _TrackerCardState extends State<TrackerCard>
     }
   }
 
+  String? _metaText() {
+    if (widget.tracker.type == TrackerType.habit) return null;
+    if (widget.tracker.deadlineDate == null) return null;
+    final diff = widget.tracker.deadlineDate!.difference(DateTime.now()).inDays;
+    if (diff < 0) return 'Просрочено';
+    if (diff == 0) return 'Дедлайн сегодня!';
+    if (diff <= 3) return 'Осталось $diff дн.';
+    final d = widget.tracker.deadlineDate!;
+    return 'До ${d.day}.${d.month}.${d.year}';
+  }
+
+  bool get _hasSubtext =>
+      widget.categoryName != null || _metaText() != null || _isMissed;
+
   @override
   Widget build(BuildContext context) {
+    final meta = _metaText();
+
     return GestureDetector(
       onTapDown: (_) => setState(() => _isPressed = true),
       onTapUp: (_) {
@@ -94,11 +112,7 @@ class _TrackerCardState extends State<TrackerCard>
           margin: const EdgeInsets.only(bottom: 9),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           decoration: BoxDecoration(
-            color: _isDone
-                ? _accentBg
-                : _isMissed
-                ? const Color(0xFFFFF5F5)
-                : _accentBg,
+            color: _accentBg,
             borderRadius: BorderRadius.circular(18),
           ),
           child: Row(
@@ -120,10 +134,12 @@ class _TrackerCardState extends State<TrackerCard>
 
               const SizedBox(width: 11),
 
-              // Title + Meta
+              // Title + subtext
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       widget.tracker.title,
@@ -131,49 +147,56 @@ class _TrackerCardState extends State<TrackerCard>
                         fontFamily: 'Nunito',
                         fontSize: 14,
                         fontVariations: const [FontVariation('wght', 700)],
-                        color: _isMissed
-                            ? const Color(0xFFAAAAAA)
-                            : const Color(0xFF1A1A1A),
                         decoration: _isDone
                             ? TextDecoration.lineThrough
                             : TextDecoration.none,
                       ),
                     ),
-                    const SizedBox(height: 3),
-                    Row(
-                      children: [
-                        Text(
-                          _metaText(),
-                          style: const TextStyle(
-                            fontSize: 10,
-                            color: Color(0xFFAAAAAA),
-                          ),
+                    if (_hasSubtext) ...[
+                      const SizedBox(height: 3),
+                      DefaultTextStyle(
+                        style: TextStyle(
+                          fontFamily: 'Nunito',
+                          fontSize: 10,
+                          color: Colors.black.withValues(alpha: 0.45),
+                          fontVariations: const [FontVariation('wght', 600)],
                         ),
-                        if (_isMissed) ...[
-                          const SizedBox(width: 4),
-                          const Text(
-                            '·',
-                            style: TextStyle(color: Color(0xFFAAAAAA)),
-                          ),
-                          const SizedBox(width: 4),
-                          const Text(
-                            'Пропущено',
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: Color(0xFFE05050),
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
+                        child: Row(
+                          children: [
+                            if (widget.categoryName != null)
+                              Text(widget.categoryName!),
+
+                            if (widget.categoryName != null &&
+                                (meta != null || _isMissed)) ...[
+                              const SizedBox(width: 4),
+                              const Text('·'),
+                              const SizedBox(width: 4),
+                            ],
+
+                            if (meta != null) Text(meta),
+
+                            if (_isMissed) ...[
+                              if (meta != null) ...[
+                                const SizedBox(width: 4),
+                                const Text('·'),
+                                const SizedBox(width: 4),
+                              ],
+                              const Text(
+                                'Пропущено',
+                                style: TextStyle(color: Color(0xFFE05050)),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
 
               const SizedBox(width: 10),
 
-              // Check button — только здесь toggle
+              // Check button
               ScaleTransition(
                 scale: _checkScale,
                 child: GestureDetector(
@@ -203,31 +226,5 @@ class _TrackerCardState extends State<TrackerCard>
         ),
       ),
     );
-  }
-
-  String _metaText() {
-    if (widget.tracker.type == TrackerType.habit) {
-      const dayNames = {
-        Weekday.mon: 'Пн',
-        Weekday.tue: 'Вт',
-        Weekday.wed: 'Ср',
-        Weekday.thu: 'Чт',
-        Weekday.fri: 'Пт',
-        Weekday.sat: 'Сб',
-        Weekday.sun: 'Вс',
-      };
-      final days = widget.tracker.schedule.map((d) => dayNames[d]!).join(', ');
-      return days.isEmpty ? 'Каждый день' : days;
-    } else {
-      if (widget.tracker.deadlineDate == null) return 'Нерегулярное';
-      final diff = widget.tracker.deadlineDate!
-          .difference(DateTime.now())
-          .inDays;
-      if (diff < 0) return 'Просрочено';
-      if (diff == 0) return 'Дедлайн сегодня!';
-      if (diff <= 3) return 'Осталось $diff дн.';
-      final d = widget.tracker.deadlineDate!;
-      return 'До ${d.day}.${d.month}.${d.year}';
-    }
   }
 }

@@ -117,6 +117,7 @@ class _TrackerListItemState extends State<_TrackerListItem>
         tracker: tracker,
         completions: state.completions,
         selectedDate: state.selectedDate,
+        categoryName: state.categoryNameFor(tracker.categoryId),
         onCardTap: () {
           if (_isOpen) _slidableController.close();
         },

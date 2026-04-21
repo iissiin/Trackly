@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:trackly/data/models/category_model.dart';
 import 'package:trackly/data/models/completion_model.dart';
 import 'package:trackly/data/models/tracker_model.dart';
+import 'package:trackly/data/repositories/category_repository.dart';
 import 'package:trackly/data/repositories/tracker_repository.dart';
 
 // MARK: Event
@@ -16,7 +18,6 @@ class TrackerSubscribed extends TrackerEvent {
 class TrackerDataUpdated extends TrackerEvent {
   final List<TrackerModel> trackers;
   final List<CompletionModel> completions;
-
   TrackerDataUpdated(this.trackers, this.completions);
 }
 
@@ -33,7 +34,6 @@ class TrackerFilterChanged extends TrackerEvent {
 class TrackerMarkToggled extends TrackerEvent {
   final String trackerId;
   final bool isDone;
-
   TrackerMarkToggled(this.trackerId, {required this.isDone});
 }
 
@@ -53,15 +53,26 @@ class TrackerLoading extends TrackerState {}
 class TrackerLoaded extends TrackerState {
   final List<TrackerModel> allTrackers;
   final List<CompletionModel> completions;
+  final List<CategoryModel> categories;
   final DateTime selectedDate;
   final TrackerFilter activeFilter;
 
   TrackerLoaded({
     required this.allTrackers,
     required this.completions,
+    required this.categories,
     required this.selectedDate,
     required this.activeFilter,
   });
+
+  String? categoryNameFor(String? categoryId) {
+    if (categoryId == null) return null;
+    try {
+      return categories.firstWhere((c) => c.id == categoryId).name;
+    } catch (_) {
+      return null;
+    }
+  }
 
   List<TrackerModel> get filtered {
     final visible = allTrackers.where((t) {
@@ -79,12 +90,14 @@ class TrackerLoaded extends TrackerState {
   TrackerLoaded copyWith({
     List<TrackerModel>? allTrackers,
     List<CompletionModel>? completions,
+    List<CategoryModel>? categories,
     DateTime? selectedDate,
     TrackerFilter? activeFilter,
   }) {
     return TrackerLoaded(
       allTrackers: allTrackers ?? this.allTrackers,
       completions: completions ?? this.completions,
+      categories: categories ?? this.categories,
       selectedDate: selectedDate ?? this.selectedDate,
       activeFilter: activeFilter ?? this.activeFilter,
     );
@@ -100,15 +113,18 @@ class TrackerError extends TrackerState {
 
 class TrackerBloc extends Bloc<TrackerEvent, TrackerState> {
   final TrackerRepository _repo;
+  final CategoryRepository _categoryRepo;
 
   StreamSubscription<List<TrackerModel>>? _trackersSub;
   StreamSubscription<List<CompletionModel>>? _completionsSub;
+  StreamSubscription<List<CategoryModel>>? _categoriesSub;
 
   List<TrackerModel> _trackers = [];
   List<CompletionModel> _completions = [];
+  List<CategoryModel> _categories = [];
   String? _uid;
 
-  TrackerBloc(this._repo) : super(TrackerInitial()) {
+  TrackerBloc(this._repo, this._categoryRepo) : super(TrackerInitial()) {
     on<TrackerSubscribed>(_onSubscribed);
     on<TrackerDataUpdated>(_onDataUpdated);
     on<TrackerDateChanged>(_onDateChanged);
@@ -123,6 +139,7 @@ class TrackerBloc extends Bloc<TrackerEvent, TrackerState> {
 
     _trackersSub?.cancel();
     _completionsSub?.cancel();
+    _categoriesSub?.cancel();
 
     _trackersSub = _repo.watchTrackers(event.uid).listen((trackers) {
       _trackers = trackers;
@@ -135,15 +152,20 @@ class TrackerBloc extends Bloc<TrackerEvent, TrackerState> {
       _completions = completions;
       add(TrackerDataUpdated(_trackers, _completions));
     });
+
+    _categoriesSub = _categoryRepo.watchCategories(event.uid).listen((
+      categories,
+    ) {
+      _categories = categories;
+      add(TrackerDataUpdated(_trackers, _completions));
+    });
   }
 
   void _onDataUpdated(TrackerDataUpdated event, Emitter<TrackerState> emit) {
     final current = state;
-
     final selectedDate = current is TrackerLoaded
         ? current.selectedDate
         : DateTime.now();
-
     final filter = current is TrackerLoaded
         ? current.activeFilter
         : TrackerFilter.active;
@@ -152,6 +174,7 @@ class TrackerBloc extends Bloc<TrackerEvent, TrackerState> {
       TrackerLoaded(
         allTrackers: event.trackers,
         completions: event.completions,
+        categories: _categories,
         selectedDate: selectedDate,
         activeFilter: filter,
       ),
@@ -178,9 +201,7 @@ class TrackerBloc extends Bloc<TrackerEvent, TrackerState> {
     Emitter<TrackerState> emit,
   ) async {
     if (_uid == null || state is! TrackerLoaded) return;
-
     final date = (state as TrackerLoaded).selectedDate;
-
     if (event.isDone) {
       await _repo.unmarkDone(_uid!, event.trackerId, date);
     } else {
@@ -193,7 +214,6 @@ class TrackerBloc extends Bloc<TrackerEvent, TrackerState> {
     Emitter<TrackerState> emit,
   ) async {
     if (_uid == null) return;
-
     await _repo.deleteTracker(_uid!, event.trackerId);
   }
 
@@ -201,6 +221,7 @@ class TrackerBloc extends Bloc<TrackerEvent, TrackerState> {
   Future<void> close() {
     _trackersSub?.cancel();
     _completionsSub?.cancel();
+    _categoriesSub?.cancel();
     return super.close();
   }
 }
