@@ -5,8 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:go_router/go_router.dart';
 import 'package:trackly/core/theme/app_colors.dart';
-import 'package:trackly/core/ui/app_dialogs.dart';
-import 'package:trackly/core/ui/app_snackbar.dart';
+import 'package:trackly/core/utils/app_dialogs.dart';
+import 'package:trackly/core/utils/app_snackbar.dart';
 import 'package:trackly/data/models/tracker_model.dart';
 import 'package:trackly/features/screens/home_screen/bloc/tracker_bloc.dart';
 import 'package:trackly/features/screens/home_screen/ui/tracker_card.dart';
@@ -62,6 +62,130 @@ class TrackerList extends StatelessWidget {
                 );
               },
             ),
+    );
+  }
+}
+
+// MARK: - TrackerStateWrapper
+
+class TrackerStateWrapper extends StatelessWidget {
+  const TrackerStateWrapper({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocConsumer<TrackerBloc, TrackerState>(
+      listenWhen: (prev, curr) => curr is TrackerError && prev is! TrackerError,
+      listener: (context, state) {
+        AppSnackbar.error(context, 'Не удалось получить трекеры');
+      },
+      builder: (context, state) {
+        return AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          switchInCurve: Curves.easeOut,
+          switchOutCurve: Curves.easeIn,
+          transitionBuilder: (child, animation) => FadeTransition(
+            opacity: animation,
+            child: SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0, 0.05),
+                end: Offset.zero,
+              ).animate(animation),
+              child: child,
+            ),
+          ),
+          child: switch (state) {
+            TrackerLoaded() => TrackerList(
+              key: const ValueKey('loaded'),
+              state: state,
+            ),
+            TrackerError() => _ErrorState(key: const ValueKey('error')),
+            TrackerLoading() => const _LoadingState(key: ValueKey('loading')),
+            _ => const SizedBox.shrink(key: ValueKey('initial')),
+          },
+        );
+      },
+    );
+  }
+}
+
+// MARK: - States
+
+class _LoadingState extends StatelessWidget {
+  const _LoadingState({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Padding(
+      padding: EdgeInsets.fromLTRB(20, 48, 20, 100),
+      child: Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation(appColors.green),
+          strokeWidth: 2.5,
+        ),
+      ),
+    );
+  }
+}
+
+class _ErrorState extends StatelessWidget {
+  const _ErrorState({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 28, 20, 100),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const Text(
+              'Что-то пошло не так',
+              style: TextStyle(
+                fontFamily: 'Nunito',
+                fontSize: 15,
+                fontVariations: [FontVariation('wght', 700)],
+                color: appColors.text,
+              ),
+            ),
+            const SizedBox(height: 5),
+            const Text(
+              'Не удалось загрузить трекеры.\nПроверьте соединение и попробуйте снова.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: 'Nunito',
+                fontSize: 13,
+                fontVariations: [FontVariation('wght', 500)],
+                color: appColors.textSub,
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 20),
+            GestureDetector(
+              onTap: () => context.read<TrackerBloc>().add(TrackerRetried()),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: appColors.green,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Text(
+                  'Повторить',
+                  style: TextStyle(
+                    fontFamily: 'Nunito',
+                    fontSize: 13,
+                    fontVariations: [FontVariation('wght', 700)],
+                    color: appColors.mint,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -124,6 +248,8 @@ class _EmptyState extends StatelessWidget {
     );
   }
 }
+
+// MARK: - List item
 
 class _TrackerListItem extends StatefulWidget {
   final TrackerModel tracker;

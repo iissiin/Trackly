@@ -76,9 +76,10 @@ class CreateTrackerCubit extends Cubit<CreateTrackerState> {
   final TrackerRepository _repo;
   final CategoryRepository _catRepo = CategoryRepository();
 
+  static const _timeout = Duration(seconds: 10);
+
   CreateTrackerCubit(this._repo) : super(const CreateTrackerState());
 
-  // Фабричный конструктор для редактирования — prefill из существующего трекера
   CreateTrackerCubit.fromTracker(this._repo, TrackerModel t)
     : super(
         CreateTrackerState(
@@ -154,7 +155,7 @@ class CreateTrackerCubit extends Cubit<CreateTrackerState> {
         deadlineDate: state.deadlineDate,
         reminderTime: state.reminderTime,
       );
-      await _repo.createTracker(tracker);
+      await _repo.createTracker(tracker).timeout(_timeout);
       return true;
     } catch (e) {
       emit(state.copyWith(isSubmitting: false, error: e.toString()));
@@ -183,7 +184,7 @@ class CreateTrackerCubit extends Cubit<CreateTrackerState> {
         deadlineDate: state.deadlineDate,
         reminderTime: state.reminderTime,
       );
-      await _repo.updateTracker(updated);
+      await _repo.updateTracker(updated).timeout(_timeout);
       return true;
     } catch (e) {
       emit(state.copyWith(isSubmitting: false, error: e.toString()));

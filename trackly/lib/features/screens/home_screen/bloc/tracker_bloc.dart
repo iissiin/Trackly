@@ -42,6 +42,8 @@ class TrackerDeleted extends TrackerEvent {
   TrackerDeleted(this.trackerId);
 }
 
+class TrackerRetried extends TrackerEvent {}
+
 // MARK: State
 
 abstract class TrackerState {}
@@ -131,34 +133,43 @@ class TrackerBloc extends Bloc<TrackerEvent, TrackerState> {
     on<TrackerFilterChanged>(_onFilterChanged);
     on<TrackerMarkToggled>(_onMarkToggled);
     on<TrackerDeleted>(_onDeleted);
+    on<TrackerRetried>(_onRetried);
+    on<_ErrorOccurred>(_onErrorOccurred);
   }
 
   void _onSubscribed(TrackerSubscribed event, Emitter<TrackerState> emit) {
     _uid = event.uid;
     emit(TrackerLoading());
+    _subscribeStreams(emit);
+  }
 
+  void _onRetried(TrackerRetried event, Emitter<TrackerState> emit) {
+    if (_uid == null) return;
+    emit(TrackerLoading());
+    _subscribeStreams(emit);
+  }
+
+  void _subscribeStreams(Emitter<TrackerState> emit) {
     _trackersSub?.cancel();
     _completionsSub?.cancel();
     _categoriesSub?.cancel();
 
-    _trackersSub = _repo.watchTrackers(event.uid).listen((trackers) {
+    _trackersSub = _repo.watchTrackers(_uid!).listen((trackers) {
       _trackers = trackers;
       add(TrackerDataUpdated(_trackers, _completions));
-    });
+    }, onError: (_) => add(_ErrorOccurred()));
 
-    _completionsSub = _repo.watchCompletions(event.uid, DateTime.now()).listen((
+    _completionsSub = _repo.watchCompletions(_uid!, DateTime.now()).listen((
       completions,
     ) {
       _completions = completions;
       add(TrackerDataUpdated(_trackers, _completions));
-    });
+    }, onError: (_) => add(_ErrorOccurred()));
 
-    _categoriesSub = _categoryRepo.watchCategories(event.uid).listen((
-      categories,
-    ) {
+    _categoriesSub = _categoryRepo.watchCategories(_uid!).listen((categories) {
       _categories = categories;
       add(TrackerDataUpdated(_trackers, _completions));
-    });
+    }, onError: (_) => add(_ErrorOccurred()));
   }
 
   void _onDataUpdated(TrackerDataUpdated event, Emitter<TrackerState> emit) {
@@ -196,6 +207,12 @@ class TrackerBloc extends Bloc<TrackerEvent, TrackerState> {
     }
   }
 
+  void _onErrorOccurred(_ErrorOccurred event, Emitter<TrackerState> emit) {
+    if (state is! TrackerError) {
+      emit(TrackerError('Не удалось загрузить трекеры'));
+    }
+  }
+
   Future<void> _onMarkToggled(
     TrackerMarkToggled event,
     Emitter<TrackerState> emit,
@@ -225,3 +242,5 @@ class TrackerBloc extends Bloc<TrackerEvent, TrackerState> {
     return super.close();
   }
 }
+
+class _ErrorOccurred extends TrackerEvent {}
