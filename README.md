@@ -1,9 +1,12 @@
+Flutter 3.38.0 
+Dart 3.10.0 (build 3.10.0-290.4.beta) • DevTools 2.51.1
+
 # ТЗ мобильного приложения Trackly
 
 # Ссылки
 
 [Дизайн Figma](https://www.figma.com/design/AN9TAfF3BAMdMt7nzqR8iD/Untitled?node-id=0-1&p=f)
-[Task-тркер](-)
+[Task-трекер](https://github.com/users/iissiin/projects/4/views/1)
 
 # Назначение и цели приложения
 
