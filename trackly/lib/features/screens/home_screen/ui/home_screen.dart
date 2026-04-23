@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:trackly/core/theme/app_colors.dart';
 import 'package:trackly/data/models/tracker_model.dart';
+import 'package:trackly/data/repositories/category_repository.dart';
 import 'package:trackly/data/repositories/tracker_repository.dart';
 import 'package:trackly/features/screens/home_screen/bloc/tracker_bloc.dart';
 import 'package:trackly/features/screens/home_screen/ui/calendar.dart';
@@ -22,7 +23,8 @@ class HomeScreen extends StatelessWidget {
         BlocProvider(create: (_) => WeatherBloc()..add(WeatherLoadRequested())),
         BlocProvider(
           create: (_) =>
-              TrackerBloc(TrackerRepository())..add(TrackerSubscribed(uid)),
+              TrackerBloc(TrackerRepository(), CategoryRepository())
+                ..add(TrackerSubscribed(uid)),
         ),
       ],
       child: const _HomeView(),
@@ -68,9 +70,7 @@ class _HomeView extends StatelessWidget {
                   if (state is TrackerLoading) {
                     return const Center(child: CircularProgressIndicator());
                   }
-                  if (state is! TrackerLoaded || state.filtered.isEmpty) {
-                    return const SizedBox();
-                  }
+                  if (state is! TrackerLoaded) return const SizedBox();
                   return TrackerList(state: state);
                 },
               ),

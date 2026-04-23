@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:trackly/core/theme/app_colors.dart';
-import 'package:trackly/core/ui/app_snackbar.dart';
+import 'package:trackly/core/utils/app_snackbar.dart';
 import 'package:trackly/data/models/tracker_model.dart';
 import 'package:trackly/data/repositories/tracker_repository.dart';
 import 'package:trackly/features/screens/home_screen/bloc/create_tracker_bloc.dart';
@@ -189,9 +189,12 @@ class _SubmitButton extends StatelessWidget {
           ? null
           : () async {
               final success = await context.read<CreateTrackerCubit>().submit();
-              if (success && context.mounted) {
-                AppSnackbar.success(context, 'Трекер добавлен 🎉');
+              if (!context.mounted) return;
+              if (success) {
+                AppSnackbar.success(context, 'Трекер добавлен');
                 context.pop();
+              } else {
+                AppSnackbar.error(context, 'Не удалось добавить трекер');
               }
             },
       child: AnimatedContainer(

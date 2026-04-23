@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:trackly/core/theme/app_colors.dart';
 
@@ -72,7 +74,6 @@ class _CalendarStripState extends State<CalendarStrip> {
     } else {
       final firstMonthName = months[firstDay.month - 1];
       final lastMonthName = months[lastDay.month - 1];
-
       if (firstDay.year == lastDay.year) {
         return '$firstMonthName – $lastMonthName ${firstDay.year}';
       } else {
@@ -88,18 +89,22 @@ class _CalendarStripState extends State<CalendarStrip> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final horizontalPadding = screenWidth * 0.038;
+    final cardWidth = (screenWidth - horizontalPadding * 2) / 7 * 0.93;
+    final cardHeight = cardWidth * 1.4;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 16),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          // ТЕПЕРЬ БЕЗ АНИМАЦИИ: просто текст, который перерисовывается через setState
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.055),
           child: Text(
             _formatHeaderTitle(_currentPageOffset),
             style: TextStyle(
               fontFamily: 'Nunito',
-              fontSize: 17,
+              fontSize: screenWidth * 0.040,
               color: appColors.text,
               fontVariations: const [FontVariation('wght', 700)],
             ),
@@ -107,11 +112,10 @@ class _CalendarStripState extends State<CalendarStrip> {
         ),
         const SizedBox(height: 12),
         SizedBox(
-          height: 78,
+          height: cardHeight,
           child: PageView.builder(
             controller: _pageController,
-            physics:
-                const ClampingScrollPhysics(), // Более "строгий" скролл без пружинистости
+            physics: const ClampingScrollPhysics(),
             onPageChanged: (page) {
               setState(() {
                 _currentPageOffset = page - _initialPage;
@@ -121,7 +125,7 @@ class _CalendarStripState extends State<CalendarStrip> {
               final offset = page - _initialPage;
               final days = _daysOfWeek(offset);
               return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 14),
+                padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: days.map((day) {
@@ -130,14 +134,13 @@ class _CalendarStripState extends State<CalendarStrip> {
                     return GestureDetector(
                       onTap: () => widget.onDateChanged(day),
                       child: Container(
-                        // Заменили AnimatedContainer на обычный Container
-                        width: 53,
-                        height: 75,
+                        width: cardWidth,
+                        height: cardHeight,
                         decoration: BoxDecoration(
                           color: isSelected
                               ? appColors.green
                               : appColors.cardBg,
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(cardWidth * 0.26),
                           border: isSelected
                               ? null
                               : Border.all(color: appColors.border, width: 1),
@@ -149,9 +152,9 @@ class _CalendarStripState extends State<CalendarStrip> {
                               _shortWeekday(day.weekday),
                               style: TextStyle(
                                 fontFamily: 'Nunito',
-                                fontSize: 9,
+                                fontSize: screenWidth * 0.020,
                                 fontVariations: const [
-                                  FontVariation('wght', 600),
+                                  FontVariation('wght', 400),
                                 ],
                                 color: isSelected
                                     ? Colors.white.withOpacity(0.75)
@@ -159,12 +162,12 @@ class _CalendarStripState extends State<CalendarStrip> {
                                 letterSpacing: 0.6,
                               ),
                             ),
-                            const SizedBox(height: 3),
+                            SizedBox(height: cardHeight * 0.04),
                             Text(
                               '${day.day}',
                               style: TextStyle(
                                 fontFamily: 'Nunito',
-                                fontSize: 18,
+                                fontSize: screenWidth * 0.048,
                                 fontVariations: const [
                                   FontVariation('wght', 700),
                                 ],
@@ -173,10 +176,10 @@ class _CalendarStripState extends State<CalendarStrip> {
                                     : appColors.text,
                               ),
                             ),
-                            const SizedBox(height: 4),
+                            SizedBox(height: cardHeight * 0.05),
                             Container(
-                              width: 4,
-                              height: 4,
+                              width: screenWidth * 0.011,
+                              height: screenWidth * 0.011,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 color: isToday
