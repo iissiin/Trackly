@@ -9,7 +9,7 @@ import 'package:trackly/features/screens/home_screen/ui/create_tracker_elements/
 import 'package:trackly/features/screens/home_screen/ui/edit_tracker_page.dart';
 import 'package:trackly/features/screens/home_screen/ui/home_screen.dart';
 import 'package:trackly/features/screens/onboarding/ui/onboarding.dart';
-import 'package:trackly/features/screens/statistic_screen/ui/statisctic_screen.dart';
+import 'package:trackly/features/screens/statistic_screen/ui/statistics_screen.dart';
 import 'package:trackly/features/screens/user_screen/ui/user_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -64,7 +64,7 @@ final GoRouter router = GoRouter(
           routes: [
             GoRoute(
               path: '/statistics',
-              builder: (context, state) => const StatiscticScreen(),
+              builder: (context, state) => const StatisticsScreen(),
             ),
           ],
         ),
