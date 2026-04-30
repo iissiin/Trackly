@@ -294,16 +294,18 @@ class _TrackerListItemState extends State<_TrackerListItem>
         motion: const StretchMotion(),
         extentRatio: 0.35,
         children: [
-          SlidableAction(
+          CustomSlidableAction(
             onPressed: (_) {
               context.push('/tracker/edit/${tracker.id}', extra: tracker);
             },
             backgroundColor: Colors.transparent,
-            foregroundColor: appColors.greenDark,
-            icon: Icons.edit_rounded,
-            spacing: 8,
+            child: Icon(
+              Icons.edit_rounded,
+              color: appColors.greenDark,
+              size: 25,
+            ),
           ),
-          SlidableAction(
+          CustomSlidableAction(
             onPressed: (_) async {
               final confirmed = await AppDialogs.confirmDelete(
                 context,
@@ -315,9 +317,11 @@ class _TrackerListItemState extends State<_TrackerListItem>
               }
             },
             backgroundColor: Colors.transparent,
-            foregroundColor: appColors.accent,
-            icon: Icons.delete_outline_rounded,
-            spacing: 8,
+            child: Icon(
+              Icons.delete_outline_rounded,
+              color: appColors.accent,
+              size: 25,
+            ),
           ),
         ],
       ),
