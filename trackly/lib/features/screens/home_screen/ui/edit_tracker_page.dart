@@ -7,12 +7,12 @@ import 'package:trackly/core/theme/app_colors.dart';
 import 'package:trackly/data/models/tracker_model.dart';
 import 'package:trackly/data/repositories/tracker_repository.dart';
 import 'package:trackly/features/screens/home_screen/bloc/create_tracker_bloc.dart';
-import 'package:trackly/features/screens/home_screen/ui/create_tracker_elements/basic_info.dart';
-import 'package:trackly/features/screens/home_screen/ui/create_tracker_elements/category.dart';
-import 'package:trackly/features/screens/home_screen/ui/create_tracker_elements/color_picker.dart';
-import 'package:trackly/features/screens/home_screen/ui/create_tracker_elements/deadline.dart';
-import 'package:trackly/features/screens/home_screen/ui/create_tracker_elements/schedule.dart';
-import 'package:trackly/features/screens/home_screen/ui/create_tracker_elements/time_section.dart';
+import 'package:trackly/features/screens/home_screen/ui/create_tracker/basic_info.dart';
+import 'package:trackly/features/screens/home_screen/ui/create_tracker/category.dart';
+import 'package:trackly/features/screens/home_screen/ui/create_tracker/color_picker.dart';
+import 'package:trackly/features/screens/home_screen/ui/create_tracker/deadline.dart';
+import 'package:trackly/features/screens/home_screen/ui/create_tracker/schedule.dart';
+import 'package:trackly/features/screens/home_screen/ui/create_tracker/time_section.dart';
 
 class EditTrackerPage extends StatelessWidget {
   final TrackerModel tracker;
