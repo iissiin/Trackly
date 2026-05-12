@@ -57,6 +57,7 @@ dependencies:
   keyboard_emoji_picker: ^1.0.3
   flutter_slidable: ^4.0.3
   adaptive_dialog: ^2.7.1
+  image_picker: ^1.2.2
   
   uuid: ^4.0.0
 

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:trackly/data/models/tracker_model.dart';
 import 'package:trackly/features/navigation_bar/navigation_bar.dart';
+import 'package:trackly/features/screens/feedback_screen/ui/feedback_screen.dart';
 import 'package:trackly/features/screens/home_screen/ui/create_tracker/create_tracker_page.dart';
 import 'package:trackly/features/screens/home_screen/ui/edit_tracker_page.dart';
 import 'package:trackly/features/screens/home_screen/ui/home_screen.dart';
@@ -38,6 +39,11 @@ final GoRouter router = GoRouter(
       path: '/tracker/create',
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const CreateTrackerPage(),
+    ),
+    GoRoute(
+      path: '/feedback',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const FeedbackScreen(),
     ),
     GoRoute(
       path: '/tracker/edit/:id',

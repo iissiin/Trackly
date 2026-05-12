@@ -6,6 +6,7 @@ import 'package:trackly/core/theme/app_colors.dart';
 import 'package:trackly/data/models/tracker_model.dart';
 import 'package:trackly/data/repositories/category_repository.dart';
 import 'package:trackly/data/repositories/tracker_repository.dart';
+import 'package:trackly/data/repositories/user_repository.dart';
 import 'package:trackly/features/screens/home_screen/bloc/tracker_bloc.dart';
 import 'package:trackly/features/screens/home_screen/ui/calendar.dart';
 import 'package:trackly/features/screens/home_screen/ui/tracker_list.dart';
@@ -83,54 +84,75 @@ class _HomeView extends StatelessWidget {
 }
 
 // MARK: TOP BAR
-class _TopBar extends StatelessWidget {
+class _TopBar extends StatefulWidget {
+  @override
+  State<_TopBar> createState() => _TopBarState();
+}
+
+class _TopBarState extends State<_TopBar> {
+  final _repo = UserRepository();
+  late final Stream<String> _nameStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameStream = _repo.watchName();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
-    final name = user?.displayName?.split(' ').first ?? 'друг';
+    return StreamBuilder<String>(
+      stream: _nameStream,
+      builder: (context, snapshot) {
+        final fullName = snapshot.data ?? '';
+        final name = fullName.isNotEmpty
+            ? fullName
+            : (FirebaseAuth.instance.currentUser?.displayName ?? 'друг');
 
-    return Container(
-      color: const Color(0xFFF2F5F2),
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+        return Container(
+          color: const Color(0xFFF2F5F2),
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: Text(
-                  'Привет, $name! 👋',
-                  style: TextStyle(
-                    fontFamily: 'Nunito',
-                    fontSize: 26,
-                    color: appColors.text,
-                    fontVariations: const [FontVariation('wght', 900.0)],
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Привет, $name! 👋',
+                      style: TextStyle(
+                        fontFamily: 'Nunito',
+                        fontSize: 26,
+                        color: appColors.text,
+                        fontVariations: const [FontVariation('wght', 900.0)],
+                      ),
+                    ),
                   ),
-                ),
+                  GestureDetector(
+                    onTap: () => context.push('/tracker/create'),
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: appColors.green,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: const Icon(
+                        Icons.add_rounded,
+                        color: appColors.white,
+                        size: 28,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              GestureDetector(
-                onTap: () => context.push('/tracker/create'),
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: appColors.green,
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: const Icon(
-                    Icons.add_rounded,
-                    color: appColors.white,
-                    size: 28,
-                  ),
-                ),
-              ),
+              const SizedBox(height: 12),
+              const WeatherBarWidget(),
+              const SizedBox(height: 4),
             ],
           ),
-          const SizedBox(height: 12),
-          const WeatherBarWidget(),
-          const SizedBox(height: 4),
-        ],
-      ),
+        );
+      },
     );
   }
 }
