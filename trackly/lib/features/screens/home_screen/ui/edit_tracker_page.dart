@@ -36,6 +36,14 @@ class _EditTrackerView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5FAF6),
+      bottomNavigationBar: BlocBuilder<CreateTrackerCubit, CreateTrackerState>(
+        builder: (context, state) => SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+            child: _SaveButton(tracker: tracker),
+          ),
+        ),
+      ),
       body: SafeArea(
         child: Column(
           children: [
@@ -60,8 +68,7 @@ class _EditTrackerView extends StatelessWidget {
                         DeadlineSection(state: state),
                       const SizedBox(height: 12),
                       CategorySection(state: state),
-                      const SizedBox(height: 24),
-                      _SaveButton(tracker: tracker),
+                      // _SaveButton убрали отсюда
                     ],
                   );
                 },
