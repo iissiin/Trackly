@@ -1,11 +1,8 @@
 // ignore_for_file: deprecated_member_use
 
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:trackly/core/theme/app_colors.dart';
 import 'package:trackly/core/utils/app_snackbar.dart';
 import 'package:trackly/data/repositories/feedback_repository.dart';
@@ -56,21 +53,13 @@ class _FeedbackViewState extends State<_FeedbackView> {
           children: [
             const _Header(),
             Expanded(
-              child: BlocBuilder<FeedbackCubit, FeedbackState>(
-                builder: (context, state) {
-                  return ListView(
-                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-                    children: [
-                      _SectionLabel(label: 'Опишите проблему'),
-                      const SizedBox(height: 8),
-                      _MessageField(controller: _messageController),
-                      const SizedBox(height: 20),
-                      _SectionLabel(label: 'Скриншот (необязательно)'),
-                      const SizedBox(height: 8),
-                      _ImagePicker(state: state),
-                    ],
-                  );
-                },
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                children: [
+                  _SectionLabel(label: 'Опишите проблему'),
+                  const SizedBox(height: 8),
+                  _MessageField(controller: _messageController),
+                ],
               ),
             ),
           ],
@@ -172,8 +161,9 @@ class _MessageField extends StatelessWidget {
       child: TextField(
         controller: controller,
         onChanged: (v) => context.read<FeedbackCubit>().setMessage(v),
-        maxLines: 6,
-        minLines: 4,
+        maxLines: 8,
+        minLines: 6,
+        maxLength: 500,
         style: TextStyle(
           fontFamily: 'Nunito',
           fontSize: 15,
@@ -188,128 +178,15 @@ class _MessageField extends StatelessWidget {
             color: appColors.textSub,
             fontVariations: const [FontVariation('wght', 500)],
           ),
+          counterStyle: TextStyle(
+            fontFamily: 'Nunito',
+            fontSize: 12,
+            color: appColors.textSub,
+          ),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.all(16),
         ),
       ),
-    );
-  }
-}
-
-// MARK: IMAGE PICKER
-
-class _ImagePicker extends StatelessWidget {
-  final FeedbackState state;
-  const _ImagePicker({required this.state});
-
-  Future<void> _pick(BuildContext context) async {
-    final picker = ImagePicker();
-    final picked = await picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 85,
-    );
-    if (picked == null) return;
-    if (!context.mounted) return;
-    context.read<FeedbackCubit>().setImage(File(picked.path));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final hasImage = state.image != null;
-
-    return GestureDetector(
-      onTap: () => _pick(context),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        height: hasImage ? 200 : 110,
-        decoration: BoxDecoration(
-          color: appColors.cardBg,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: hasImage ? appColors.green : appColors.border,
-            width: hasImage ? 1.5 : 1,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: hasImage
-            ? _ImagePreview(image: state.image!)
-            : _ImagePlaceholder(),
-      ),
-    );
-  }
-}
-
-class _ImagePlaceholder extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: appColors.mint,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(Icons.image_outlined, color: appColors.green, size: 22),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'Прикрепить скриншот',
-          style: TextStyle(
-            fontFamily: 'Nunito',
-            fontSize: 14,
-            color: appColors.textSub,
-            fontVariations: const [FontVariation('wght', 600)],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _ImagePreview extends StatelessWidget {
-  final File image;
-  const _ImagePreview({required this.image});
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(15),
-          child: Image.file(image, fit: BoxFit.cover),
-        ),
-        // Кнопка удаления
-        Positioned(
-          top: 8,
-          right: 8,
-          child: GestureDetector(
-            onTap: () => context.read<FeedbackCubit>().clearImage(),
-            child: Container(
-              width: 30,
-              height: 30,
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.5),
-                borderRadius: BorderRadius.circular(50),
-              ),
-              child: const Icon(
-                Icons.close_rounded,
-                color: Colors.white,
-                size: 18,
-              ),
-            ),
-          ),
-        ),
-      ],
     );
   }
 }
