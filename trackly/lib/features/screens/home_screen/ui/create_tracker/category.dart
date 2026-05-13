@@ -6,7 +6,7 @@ import 'package:trackly/core/theme/app_colors.dart';
 import 'package:trackly/data/repositories/category_repository.dart';
 import 'package:trackly/features/screens/home_screen/bloc/create_tracker_bloc.dart';
 import 'package:trackly/features/screens/home_screen/ui/category_elements/category_picker_widget.dart';
-import 'package:trackly/features/screens/home_screen/ui/create_tracker_elements/shared_card.dart';
+import 'package:trackly/features/screens/home_screen/ui/create_tracker/shared_card.dart';
 
 class CategorySection extends StatelessWidget {
   final CreateTrackerState state;

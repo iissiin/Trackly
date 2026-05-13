@@ -8,12 +8,12 @@ import 'package:trackly/core/utils/app_snackbar.dart';
 import 'package:trackly/data/models/tracker_model.dart';
 import 'package:trackly/data/repositories/tracker_repository.dart';
 import 'package:trackly/features/screens/home_screen/bloc/create_tracker_bloc.dart';
-import 'package:trackly/features/screens/home_screen/ui/create_tracker_elements/basic_info.dart';
-import 'package:trackly/features/screens/home_screen/ui/create_tracker_elements/schedule.dart';
-import 'package:trackly/features/screens/home_screen/ui/create_tracker_elements/category.dart';
-import 'package:trackly/features/screens/home_screen/ui/create_tracker_elements/color_picker.dart';
-import 'package:trackly/features/screens/home_screen/ui/create_tracker_elements/deadline.dart';
-import 'package:trackly/features/screens/home_screen/ui/create_tracker_elements/time_section.dart';
+import 'package:trackly/features/screens/home_screen/ui/create_tracker/basic_info.dart';
+import 'package:trackly/features/screens/home_screen/ui/create_tracker/schedule.dart';
+import 'package:trackly/features/screens/home_screen/ui/create_tracker/category.dart';
+import 'package:trackly/features/screens/home_screen/ui/create_tracker/color_picker.dart';
+import 'package:trackly/features/screens/home_screen/ui/create_tracker/deadline.dart';
+import 'package:trackly/features/screens/home_screen/ui/create_tracker/time_section.dart';
 
 class CreateTrackerPage extends StatelessWidget {
   const CreateTrackerPage({super.key});
@@ -129,8 +129,15 @@ class _TypeSelector extends StatelessWidget {
   final CreateTrackerState state;
   const _TypeSelector({required this.state});
 
+  static const _tabs = <(TrackerType, String)>[
+    (TrackerType.habit, 'Привычка'),
+    (TrackerType.irregular, 'Нерегулярное'),
+  ];
+
   @override
   Widget build(BuildContext context) {
+    final selectedIndex = _tabs.indexWhere((t) => t.$1 == state.type);
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: Container(
@@ -140,42 +147,58 @@ class _TypeSelector extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
         ),
         padding: const EdgeInsets.all(3),
-        child: Row(
-          children: [
-            _tab(context, TrackerType.habit, 'Привычка', state),
-            _tab(context, TrackerType.irregular, 'Нерегулярное', state),
-          ],
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final tabWidth = constraints.maxWidth / _tabs.length;
+
+            return Stack(
+              children: [
+                // Плашка-индикатор — едет под строками
+                AnimatedPositioned(
+                  duration: const Duration(milliseconds: 220),
+                  curve: Curves.easeOutCubic,
+                  left: selectedIndex * tabWidth,
+                  top: 0,
+                  bottom: 0,
+                  width: tabWidth,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: appColors.cardBg,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+                // Кликабельные ячейки
+                Row(
+                  children: [
+                    for (final (type, label) in _tabs)
+                      _tab(context, type, label),
+                  ],
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
   }
 
-  Widget _tab(
-    BuildContext context,
-    TrackerType type,
-    String label,
-    CreateTrackerState state,
-  ) {
+  Widget _tab(BuildContext context, TrackerType type, String label) {
     final isActive = state.type == type;
     return Expanded(
       child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: () => context.read<CreateTrackerCubit>().setType(type),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          decoration: BoxDecoration(
-            color: isActive ? appColors.cardBg : Colors.transparent,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Center(
-            child: Text(
-              label,
-              style: TextStyle(
-                fontFamily: 'Nunito',
-                fontSize: 13,
-                color: isActive ? appColors.green : appColors.textSub,
-                fontVariations: const [FontVariation('wght', 700)],
-              ),
+        child: Center(
+          child: AnimatedDefaultTextStyle(
+            duration: const Duration(milliseconds: 220),
+            style: TextStyle(
+              fontFamily: 'Nunito',
+              fontSize: 13,
+              color: isActive ? appColors.green : appColors.textSub,
+              fontVariations: const [FontVariation('wght', 700)],
             ),
+            child: Text(label),
           ),
         ),
       ),
