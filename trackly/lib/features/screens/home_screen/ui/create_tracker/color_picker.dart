@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:trackly/core/theme/app_colors.dart';
 import 'package:trackly/features/screens/home_screen/bloc/create_tracker_bloc.dart';
-import 'package:trackly/features/screens/home_screen/ui/create_tracker_elements/shared_card.dart';
+import 'package:trackly/features/screens/home_screen/ui/create_tracker/shared_card.dart';
 
 class ColorSection extends StatelessWidget {
   final CreateTrackerState state;

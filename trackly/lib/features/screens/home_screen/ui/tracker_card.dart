@@ -128,7 +128,6 @@ class _TrackerCardState extends State<TrackerCard>
     if (widget.tracker.type == TrackerType.habit) return null;
     if (widget.tracker.deadlineDate == null) return null;
     final diff = widget.tracker.deadlineDate!.difference(DateTime.now()).inDays;
-    if (diff < 0) return 'Просрочено';
     if (diff == 0) return 'Дедлайн сегодня!';
     if (diff <= 3) return 'Осталось $diff дн.';
     final d = widget.tracker.deadlineDate!;
