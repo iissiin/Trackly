@@ -6,9 +6,6 @@ import 'package:trackly/data/repositories/category_repository.dart';
 import 'package:trackly/data/repositories/tracker_repository.dart';
 import 'package:trackly/data/models/category_model.dart';
 
-// ─────────────────────────────────────────────
-// MARK: Events
-// ─────────────────────────────────────────────
 
 abstract class StatisticEvent {}
 
@@ -26,28 +23,19 @@ class _StatisticDataUpdated extends StatisticEvent {
 
 class _StatisticError extends StatisticEvent {}
 
-// ─────────────────────────────────────────────
-// MARK: State
-// ─────────────────────────────────────────────
 
 class StatisticState {
-  /// Всего трекеров создано
   final int totalTrackers;
 
-  /// Выполнено за последние 7 дней
   final int completedThisWeek;
 
-  /// Самая популярная категория (название)
   final String? topCategory;
 
-  /// Выполнено сегодня / всего на сегодня
   final int completedToday;
   final int totalToday;
 
-  /// Активных трекеров (запланированы на сегодня и не выполнены)
   final int activeTrackers;
 
-  /// Лучшая серия (дней подряд хотя бы 1 выполнение)
   final int bestStreak;
 
   final bool isLoading;
@@ -91,10 +79,6 @@ class StatisticState {
   }
 }
 
-// ─────────────────────────────────────────────
-// MARK: Bloc
-// ─────────────────────────────────────────────
-
 class StatisticBloc extends Bloc<StatisticEvent, StatisticState> {
   final TrackerRepository _trackerRepo;
   final CategoryRepository _categoryRepo;
@@ -133,7 +117,6 @@ class StatisticBloc extends Bloc<StatisticEvent, StatisticState> {
       onError: (_) => add(_StatisticError()),
     );
 
-    // Слушаем completions за текущий месяц
     _completionsSub = _trackerRepo
         .watchCompletions(event.uid, DateTime.now())
         .listen(
@@ -144,7 +127,6 @@ class StatisticBloc extends Bloc<StatisticEvent, StatisticState> {
       onError: (_) => add(_StatisticError()),
     );
 
-    // Слушаем категории
     _categoriesSub = _categoryRepo.watchCategories(event.uid).listen(
       (categories) {
         _categories = categories;
@@ -161,17 +143,14 @@ class StatisticBloc extends Bloc<StatisticEvent, StatisticState> {
     final today = DateTime.now();
     final todayOnly = DateTime(today.year, today.month, today.day);
 
-    // 1) Всего создано
     final totalTrackers = event.trackers.length;
 
-    // 2) Выполнено за неделю
     final weekAgo = todayOnly.subtract(const Duration(days: 6));
     final completedThisWeek = event.completions.where((c) {
       final d = DateTime(c.date.year, c.date.month, c.date.day);
       return !d.isBefore(weekAgo) && !d.isAfter(todayOnly);
     }).length;
 
-    // 3) Самая популярная категория
     final categoryCount = <String, int>{};
     for (final t in event.trackers) {
       if (t.categoryId != null) {
@@ -192,7 +171,6 @@ class StatisticBloc extends Bloc<StatisticEvent, StatisticState> {
       }
     }
 
-    // 4) Выполнено сегодня / всего на сегодня
     final scheduledToday = event.trackers
         .where((t) => t.isScheduledFor(todayOnly))
         .toList();
@@ -201,7 +179,6 @@ class StatisticBloc extends Bloc<StatisticEvent, StatisticState> {
       return d == todayOnly;
     }).length;
 
-    // 5) Активных (запланированы сегодня, ещё не выполнены)
     final activeTrackers = scheduledToday
         .where(
           (t) =>
@@ -209,7 +186,6 @@ class StatisticBloc extends Bloc<StatisticEvent, StatisticState> {
         )
         .length;
 
-    // 6) Лучшая серия — дней подряд где есть хотя бы 1 выполнение
     final bestStreak = _calcBestStreak(event.completions, todayOnly);
 
     emit(
@@ -232,11 +208,9 @@ class StatisticBloc extends Bloc<StatisticEvent, StatisticState> {
     emit(state.copyWith(isLoading: false, hasError: true));
   }
 
-  /// Считает лучшую серию непрерывных дней с хотя бы одним выполнением
   int _calcBestStreak(List<CompletionModel> completions, DateTime today) {
     if (completions.isEmpty) return 0;
 
-    // Уникальные дни с выполнениями
     final days = completions
         .map((c) => DateTime(c.date.year, c.date.month, c.date.day))
         .toSet()

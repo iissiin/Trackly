@@ -57,6 +57,7 @@ dependencies:
   keyboard_emoji_picker: ^1.0.3
   flutter_slidable: ^4.0.3
   adaptive_dialog: ^2.7.1
+  video_player: ^2.9.2
   
   uuid: ^4.0.0
 
@@ -109,6 +110,7 @@ flutter:
     - assets/navigation_bar/homeicon.svg
     - assets/navigation_bar/usericon.svg
     - assets/onboarding/googleicon.svg
+    - assets/images/flowerHibis.mp4
     - .env
 
   # An image asset can refer to one or more resolution-specific "variants", see
@@ -130,3 +132,4 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+ 
