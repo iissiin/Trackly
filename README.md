@@ -3,6 +3,14 @@ Dart 3.10.0 (build 3.10.0-290.4.beta) • DevTools 2.51.1
 
 # ТЗ мобильного приложения Trackly
 
+# Как запустиь проект
+
+В командной строке вводить
+- flutter pub get
+- cd trackly
+- flutter run
+
+
 # Ссылки
 
 [Дизайн Figma](https://www.figma.com/design/AN9TAfF3BAMdMt7nzqR8iD/Untitled?node-id=0-1&p=f)
