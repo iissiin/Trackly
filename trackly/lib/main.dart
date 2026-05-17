@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:trackly/core/router/router.dart';
+import 'package:trackly/core/services/notification/notification_service.dart';
 import 'package:trackly/firebase_options.dart';
 import 'core/utils/logger.dart';
 
@@ -18,6 +19,10 @@ void main() async {
   }
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  final notificationService = NotificationService();
+  await notificationService.initialize();
+  await notificationService.requestPermissions();
 
   runApp(const Trackly());
 }

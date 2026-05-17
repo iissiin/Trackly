@@ -1,9 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:trackly/core/services/notification/notification_service.dart';
 import 'package:trackly/data/models/completion_model.dart';
 import 'package:trackly/data/models/tracker_model.dart';
 
 class TrackerRepository {
   final _db = FirebaseFirestore.instance;
+  final _notificationService = NotificationService();
 
   CollectionReference<Map<String, dynamic>> _trackers(String uid) =>
       _db.collection('users').doc(uid).collection('trackers');
@@ -24,14 +26,19 @@ class TrackerRepository {
 
   Future<void> createTracker(TrackerModel tracker) async {
     await _trackers(tracker.userId).doc(tracker.id).set(tracker.toJson());
+    await _scheduleNotifications(tracker);
   }
 
   Future<void> updateTracker(TrackerModel tracker) async {
     await _trackers(tracker.userId).doc(tracker.id).update(tracker.toJson());
+    await _notificationService.cancelTrackerNotifications(tracker.id);
+    await _scheduleNotifications(tracker);
   }
 
   Future<void> deleteTracker(String uid, String trackerId) async {
     await _trackers(uid).doc(trackerId).delete();
+    await _notificationService.cancelTrackerNotifications(trackerId);
+
     final completions = await _completions(
       uid,
     ).where('trackerId', isEqualTo: trackerId).get();
@@ -40,9 +47,33 @@ class TrackerRepository {
     }
   }
 
+  Future<void> _scheduleNotifications(TrackerModel tracker) async {
+    if (tracker.reminderTime != null && tracker.type == TrackerType.habit) {
+      final weekdays = tracker.schedule.map((day) => day.index + 1).toList();
+
+      await _notificationService.scheduleTrackerReminder(
+        trackerId: tracker.id,
+        title: tracker.title,
+        emoji: tracker.emoji,
+        time: tracker.reminderTime!,
+        weekdays: weekdays,
+      );
+    }
+
+    if (tracker.deadlineDate != null && tracker.type == TrackerType.irregular) {
+      await _notificationService.scheduleDeadlineReminder(
+        trackerId: tracker.id,
+        title: tracker.title,
+        emoji: tracker.emoji,
+        deadline: tracker.deadlineDate!,
+      );
+    }
+  }
+
   Stream<List<CompletionModel>> watchCompletions(String uid, DateTime month) {
     final start = DateTime(month.year, month.month, 1);
     final end = DateTime(month.year, month.month + 1, 1);
+
     return _completions(uid)
         .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
         .where('date', isLessThan: Timestamp.fromDate(end))
