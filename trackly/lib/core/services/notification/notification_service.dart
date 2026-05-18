@@ -45,6 +45,10 @@ class NotificationService {
     return status.isGranted;
   }
 
+  Future<void> openSettings() async {
+    await openAppSettings();
+  }
+
   Future<void> scheduleTrackerReminder({
     required String trackerId,
     required String title,

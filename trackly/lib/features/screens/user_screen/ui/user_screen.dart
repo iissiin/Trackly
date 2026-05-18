@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:trackly/core/services/notification/notification_service.dart';
 import 'package:trackly/core/theme/app_colors.dart';
 import 'package:trackly/core/theme/app_images.dart';
 import 'package:trackly/core/utils/app_dialogs.dart';
@@ -356,8 +357,56 @@ class _SettingsCard extends StatelessWidget {
             label: 'Уведомления',
             trailing: Switch.adaptive(
               value: state.notificationsEnabled,
-              onChanged: (v) =>
-                  context.read<UserCubit>().toggleNotifications(v),
+              onChanged: (v) async {
+                final success = await context
+                    .read<UserCubit>()
+                    .toggleNotifications(v);
+
+                if (!success && v && context.mounted) {
+                  showDialog(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: Text(
+                        'Уведомления выключены',
+                        style: TextStyle(
+                          fontFamily: 'Nunito',
+                          fontVariations: [FontVariation('wght', 800)],
+                        ),
+                      ),
+                      content: Text(
+                        'Разрешите уведомления в настройках телефона',
+                        style: TextStyle(fontFamily: 'Nunito'),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          child: Text(
+                            'Отмена',
+                            style: TextStyle(
+                              fontFamily: 'Nunito',
+                              color: appColors.textSub,
+                            ),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () async {
+                            Navigator.pop(ctx);
+                            await NotificationService().openSettings();
+                          },
+                          child: Text(
+                            'Настройки',
+                            style: TextStyle(
+                              fontFamily: 'Nunito',
+                              color: appColors.green,
+                              fontVariations: [FontVariation('wght', 700)],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+              },
               activeColor: appColors.green,
             ),
           ),

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:trackly/core/services/notification/notification_service.dart';
 import 'package:trackly/data/models/completion_model.dart';
 import 'package:trackly/data/models/tracker_model.dart';
@@ -48,6 +49,17 @@ class TrackerRepository {
   }
 
   Future<void> _scheduleNotifications(TrackerModel tracker) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    final userDoc = await _db.collection('users').doc(uid).get();
+    final notificationsEnabled =
+        userDoc.data()?['notificationsEnabled'] ?? true;
+
+    if (!notificationsEnabled) {
+      return;
+    }
+
     if (tracker.reminderTime != null && tracker.type == TrackerType.habit) {
       final weekdays = tracker.schedule.map((day) => day.index + 1).toList();
 

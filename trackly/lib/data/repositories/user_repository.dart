@@ -33,5 +33,13 @@ class UserRepository {
     ]);
   }
 
+  Future<void> updateNotifications(bool enabled) async {
+    final uid = _auth.currentUser?.uid;
+    if (uid == null) return;
+    await _db.collection('users').doc(uid).update({
+      'notificationsEnabled': enabled,
+    });
+  }
+
   Future<void> signOut() => _auth.signOut();
 }
