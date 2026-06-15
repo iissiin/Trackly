@@ -2,17 +2,20 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:trackly/data/repositories/user_repository.dart';
 
 // MARK: State
+
 class UserState {
   final String name;
   final bool notificationsEnabled;
   final bool isSaving;
   final bool isLoading;
+  final bool isDeleting;
 
   const UserState({
     this.name = '',
     this.notificationsEnabled = false,
     this.isSaving = false,
     this.isLoading = false,
+    this.isDeleting = false,
   });
 
   UserState copyWith({
@@ -20,15 +23,18 @@ class UserState {
     bool? notificationsEnabled,
     bool? isSaving,
     bool? isLoading,
+    bool? isDeleting,
   }) => UserState(
     name: name ?? this.name,
     notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
     isSaving: isSaving ?? this.isSaving,
     isLoading: isLoading ?? this.isLoading,
+    isDeleting: isDeleting ?? this.isDeleting,
   );
 }
 
 // MARK: Cubit
+
 class UserCubit extends Cubit<UserState> {
   final UserRepository _repo;
 
@@ -63,4 +69,16 @@ class UserCubit extends Cubit<UserState> {
   }
 
   Future<void> signOut() => _repo.signOut();
+
+  Future<bool> deleteAccount() async {
+    emit(state.copyWith(isDeleting: true));
+    try {
+      await _repo.deleteAccount();
+      emit(state.copyWith(isDeleting: false));
+      return true;
+    } catch (_) {
+      emit(state.copyWith(isDeleting: false));
+      return false;
+    }
+  }
 }

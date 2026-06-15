@@ -83,7 +83,6 @@ class _UserViewState extends State<_UserView> {
                         const SizedBox(height: 8),
                         _NameField(controller: _nameController),
 
-                        // ← Кнопка появляется здесь
                         ValueListenableBuilder<TextEditingValue>(
                           valueListenable: _nameController,
                           builder: (context, value, child) {
@@ -222,6 +221,7 @@ class _AvatarSection extends StatelessWidget {
           ),
         ),
 
+        // Кнопка выхода (зелёная)
         GestureDetector(
           onTap: () async {
             final confirmed = await AppDialogs.confirmDelete(
@@ -239,13 +239,60 @@ class _AvatarSection extends StatelessWidget {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: const Color(0xFFFFEDED),
+              color: appColors.mint,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(
-              Icons.logout_rounded,
-              size: 18,
-              color: Color(0xFFD9534F),
+            child: Icon(Icons.logout_rounded, size: 18, color: appColors.green),
+          ),
+        ),
+
+        const SizedBox(width: 8),
+
+        // Кнопка удаления аккаунта (красная)
+        BlocBuilder<UserCubit, UserState>(
+          builder: (context, state) => GestureDetector(
+            onTap: state.isDeleting
+                ? null
+                : () async {
+                    final confirmed = await AppDialogs.confirmDelete(
+                      context,
+                      title: 'Удалить аккаунт?',
+                      message:
+                          'Все данные будут удалены безвозвратно. Продолжить?',
+                      deleteLabel: 'Удалить',
+                    );
+                    if (!confirmed || !context.mounted) return;
+                    final ok = await context.read<UserCubit>().deleteAccount();
+                    if (!context.mounted) return;
+                    if (ok) {
+                      context.go('/onboarding');
+                    } else {
+                      AppSnackbar.error(
+                        context,
+                        'Не удалось удалить аккаунт. Попробуйте войти заново.',
+                      );
+                    }
+                  },
+            child: Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFEDED),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: state.isDeleting
+                  ? const Padding(
+                      padding: EdgeInsets.all(9),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Color(0xFFD9534F),
+                      ),
+                    )
+                  : const Icon(
+                      Icons.delete_outline_rounded,
+                      size: 18,
+                      color: Color(0xFFD9534F),
+                    ),
             ),
           ),
         ),
@@ -317,7 +364,7 @@ class _NameField extends StatelessWidget {
             color: appColors.textSub,
             size: 20,
           ),
-          counterText: '', // убираем "0/30"
+          counterText: '',
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
@@ -330,6 +377,7 @@ class _NameField extends StatelessWidget {
 }
 
 // MARK: SETTINGS CARD
+// Строка "Язык" убрана — локализация не реализована
 
 class _SettingsCard extends StatelessWidget {
   final UserState state;
@@ -349,47 +397,14 @@ class _SettingsCard extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
-        children: [
-          _SettingsRow(
-            icon: Icons.notifications_outlined,
-            label: 'Уведомления',
-            trailing: Switch.adaptive(
-              value: state.notificationsEnabled,
-              onChanged: (v) =>
-                  context.read<UserCubit>().toggleNotifications(v),
-              activeColor: appColors.green,
-            ),
-          ),
-          _Divider(),
-          _SettingsRow(
-            icon: Icons.language_outlined,
-            label: 'Язык',
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Русский', // TODO: localization not implemented yet
-                  style: TextStyle(
-                    fontFamily: 'Nunito',
-                    fontSize: 14,
-                    color: appColors.textSub,
-                    fontVariations: const [FontVariation('wght', 600)],
-                  ),
-                ),
-                const SizedBox(width: 4),
-                Icon(
-                  Icons.chevron_right_rounded,
-                  color: appColors.textSub,
-                  size: 20,
-                ),
-              ],
-            ),
-            onTap: () {
-              // TODO: localization not implemented yet
-            },
-          ),
-        ],
+      child: _SettingsRow(
+        icon: Icons.notifications_outlined,
+        label: 'Уведомления',
+        trailing: Switch.adaptive(
+          value: state.notificationsEnabled,
+          onChanged: (v) => context.read<UserCubit>().toggleNotifications(v),
+          activeColor: appColors.green,
+        ),
       ),
     );
   }
@@ -476,13 +491,6 @@ class _SettingsRow extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-class _Divider extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Divider(height: 1, color: appColors.border);
   }
 }
 
